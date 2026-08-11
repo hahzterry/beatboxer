@@ -1,263 +1,624 @@
 <!doctype html>
-<!--
-Beatboxer
-Inspired by https://www.youtube.com/watch?v=6O_92BTrUcA
--->
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="x-ua-compatible" content="ie=edge" />
-  <meta name="description" itemprop="description" content="Beatboxer is a drum machine in about 100 lines of html/js/css" />
-  <meta itemprop="name" content="Beatboxer" />
-  <meta itemprop="image" content="http://sig.gy/beatboxer/thumbnail.png" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <title>BEAT.HAHZ.LIVE · Beat Machine</title>
 
-  <!-- Facebook Open Graph -->
-  <meta property="og:title" content="Beatboxer" />
-  <meta property="og:description" content="Beatboxer is a drum machine in about 100 lines of html/js/css" />
-  <meta property="og:url" content="http://sig.gy/beatboxer/" />
-  <meta property="og:type" content="website" />
-  <meta property="og:image" content="http://sig.gy/beatboxer/thumbnail.png" />
-  <meta property="og:site_name" content="Beatboxer" />
+    <style>
+        /* ─── Reset & Base ─── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:site" content="Beatboxer" />
-  <meta name="twitter:title" content="Beatboxer" />
-  <meta name="twitter:description" content="Beatboxer is a drum machine in about 100 lines of html/js/css" />
-  <meta name="twitter:image:src" content="http://sig.gy/beatboxer/thumbnail.png" />
-  <meta name="twitter:url" content="http://sig.gy/beatboxer/" />
+        body {
+            background: #0b0b0f;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
 
-  <title>Beatboxer</title>
+        /* ─── Main Card ─── */
+        .beat-machine {
+            background: linear-gradient(145deg, #13131a, #1a1a24);
+            border-radius: 40px;
+            padding: 32px 36px 40px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.85),
+                inset 0 1px 0 rgba(255, 255, 255, 0.04),
+                0 0 0 1px rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: box-shadow 0.3s;
+        }
 
-  <link rel="canonical" href="http://sig.gy/beatboxer/" />
+        /* ─── Header / Logo ─── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
 
-  <style>
-    body {
-      background-color: black;
-    }
+        .logo {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            background: linear-gradient(135deg, #c084fc, #7c3aed, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 40px rgba(124, 58, 237, 0.25);
+            user-select: none;
+        }
+        .logo span {
+            font-weight: 300;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #94a3b8, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-    p {
-      margin: 0;
-    }
+        .bpm-display {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px 18px 8px 16px;
+            border-radius: 100px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .bpm-display .value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #e2e8f0;
+            min-width: 48px;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+        .bpm-display .label {
+            opacity: 0.6;
+            font-size: 12px;
+        }
 
-    button.beat {
-      background-color: black;
-      padding: 10px;
-      border: 10px solid white;
-      margin: 5px;
-      cursor: pointer;
-      width: 0;
-      height: 0;
-    }
+        /* ─── Grid ─── */
+        .grid-wrapper {
+            position: relative;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 4px 4px 4px 0;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            overflow: hidden;
+        }
 
-    button.on {
-      background-color: red;
-      border-color: red;
-    }
+        #grid {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 6px 6px 6px 0;
+        }
 
-    button.ticked {
-      background-color: white;
-      border-color: white;
-    }
+        /* ─── Row ─── */
+        .row {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
 
-    #grid {
-      width: 800px;
-      height: 200px;
-      position: absolute;
-      top:0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      margin: auto;
-    }
+        .row-label {
+            width: 70px;
+            flex-shrink: 0;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #64748b;
+            text-align: right;
+            padding-right: 14px;
+            user-select: none;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
 
-    .github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}
-  </style>
+        /* ─── Beat Button ─── */
+        button.beat {
+            flex: 1;
+            aspect-ratio: 1 / 0.85;
+            min-height: 34px;
+            background: rgba(255, 255, 255, 0.04);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.12s ease;
+            position: relative;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            margin: 0;
+            padding: 0;
+        }
+
+        button.beat::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 8px;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.06), transparent 70%);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        button.beat:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: scale(1.02);
+        }
+        button.beat:hover::after {
+            opacity: 1;
+        }
+
+        /* Active (programmed) */
+        button.beat.on {
+            background: radial-gradient(circle at 30% 30%, #a78bfa, #7c3aed);
+            box-shadow:
+                0 0 20px rgba(124, 58, 237, 0.35),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            border-color: transparent;
+        }
+        button.beat.on::after {
+            opacity: 0.6;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2), transparent 70%);
+        }
+
+        /* Current step highlight (ticked) */
+        button.beat.ticked {
+            box-shadow: 0 0 0 2px rgba(192, 132, 252, 0.5), 0 0 30px rgba(124, 58, 237, 0.15);
+            transform: scale(1.04);
+            z-index: 2;
+        }
+
+        button.beat.ticked.on {
+            box-shadow: 0 0 0 2px rgba(192, 132, 252, 0.7), 0 0 40px rgba(124, 58, 237, 0.35);
+        }
+
+        /* ─── Footer Controls ─── */
+        .footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .footer-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #cbd5e1;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 8px 20px;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', system-ui, sans-serif;
+            letter-spacing: 0.3px;
+            backdrop-filter: blur(4px);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.12);
+            color: #f1f5f9;
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            border-color: rgba(124, 58, 237, 0.3);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(124, 58, 237, 0.2);
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            border-color: rgba(124, 58, 237, 0.5);
+            box-shadow: 0 6px 24px rgba(124, 58, 237, 0.3);
+            color: #fff;
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.12);
+            border-color: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+        }
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.25);
+            color: #fecaca;
+        }
+
+        .status-text {
+            color: #475569;
+            font-size: 12px;
+            font-weight: 400;
+            letter-spacing: 0.3px;
+            opacity: 0.6;
+        }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 700px) {
+            .beat-machine {
+                padding: 20px 16px 28px;
+                border-radius: 28px;
+            }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                padding-bottom: 12px;
+            }
+            .logo {
+                font-size: 22px;
+            }
+            .bpm-display {
+                font-size: 12px;
+                padding: 6px 14px 6px 12px;
+            }
+            .bpm-display .value {
+                font-size: 18px;
+                min-width: 36px;
+            }
+            .row-label {
+                width: 48px;
+                font-size: 9px;
+                padding-right: 8px;
+            }
+            button.beat {
+                min-height: 26px;
+                border-radius: 6px;
+            }
+            .footer {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .footer-actions {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            .btn {
+                font-size: 12px;
+                padding: 6px 14px;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .beat-machine {
+                padding: 14px 10px 20px;
+                border-radius: 20px;
+            }
+            .row-label {
+                width: 36px;
+                font-size: 8px;
+                padding-right: 4px;
+            }
+            button.beat {
+                min-height: 18px;
+                border-radius: 4px;
+            }
+            .logo {
+                font-size: 18px;
+            }
+            .bpm-display .value {
+                font-size: 15px;
+                min-width: 30px;
+            }
+        }
+
+        /* ─── Scrollable grid on tiny screens ─── */
+        .grid-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 2px;
+        }
+        .grid-scroll::-webkit-scrollbar {
+            height: 4px;
+        }
+        .grid-scroll::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+        }
+        .grid-scroll::-webkit-scrollbar-thumb {
+            background: rgba(124, 58, 237, 0.3);
+            border-radius: 8px;
+        }
+
+        /* ─── Animations ─── */
+        @keyframes pulse-glow {
+            0%,
+            100% {
+                opacity: 0.6;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+        .beat.ticked {
+            animation: pulse-glow 0.6s ease-in-out infinite;
+        }
+
+        /* ─── Live indicator dot ─── */
+        .live-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            margin-right: 8px;
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
+            animation: pulse-dot 1.4s ease-in-out infinite;
+        }
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.3;
+                transform: scale(0.85);
+            }
+        }
+    </style>
 </head>
 <body>
-  <div id="grid"></div>
 
-  <a href="https://github.com/siggy/beatboxer" class="github-corner" aria-label="Fork me on Github" title="Fork me on Github">
-    <svg width="80" height="80" viewBox="0 0 250 250" style="fill:#fff; color:#151513; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg>
-  </a>
+    <div class="beat-machine">
 
-  <script>
-    const BPM = 120;
-    const TICKS = 16;
-    const INTERVAL = 1 / (4 * BPM / (60 * 1000));
-    const MAX_BITS = 32;
-    const MAX_HEX = MAX_BITS / 4;
+        <!-- ─── Header ─── -->
+        <div class="header">
+            <div class="logo">
+                BEAT<span>.HAHZ.LIVE</span>
+            </div>
+            <div class="bpm-display">
+                <span class="live-dot"></span>
+                <span class="label">BPM</span>
+                <span class="value" id="bpmValue">120</span>
+            </div>
+        </div>
 
-    // sounds originated from http://808.html909.com
-    const sounds = [
-      'sounds/bass_drum.wav',
-      'sounds/snare_drum.wav',
-      'sounds/low_tom.wav',
-      'sounds/mid_tom.wav',
+        <!-- ─── Grid ─── -->
+        <div class="grid-scroll">
+            <div class="grid-wrapper">
+                <div id="grid"></div>
+            </div>
+        </div>
 
-      // 'sounds/hi_tom.wav',
-      // 'sounds/rim_shot.wav',
-      // 'sounds/hand_clap.wav',
-      // 'sounds/cowbell.wav',
-      // 'sounds/cymbal.wav',
-      // 'sounds/o_hi_hat.wav',
-      // 'sounds/cl_hi_hat.wav',
+        <!-- ─── Footer ─── -->
+        <div class="footer">
+            <div class="footer-actions">
+                <button class="btn btn-danger" id="clearBtn">✕ Clear Grid</button>
+                <button class="btn" id="loadBtn">↻ Load Beat</button>
+                <button class="btn btn-primary" id="randomBtn">✦ Random</button>
+            </div>
+            <span class="status-text" id="statusText">● live · 16 steps</span>
+        </div>
 
-      // 'sounds/low_conga.wav',
-      // 'sounds/mid_conga.wav',
-      // 'sounds/hi_conga.wav',
-      // 'sounds/claves.wav',
-      // 'sounds/maracas.wav',
-    ];
+    </div>
 
-    const audioCtx = new(window.AudioContext || window.webkitAudioContext)();
-    const buffers = [];
-    const theGrid = document.getElementById('grid');
-    const sLen = sounds.length;
+    <script>
+        // ─── Configuration ───
+        const BPM = 120;
+        const TICKS = 16;
+        const INTERVAL = 1 / (4 * BPM / (60 * 1000));
+        const MAX_BITS = 32;
+        const MAX_HEX = MAX_BITS / 4;
 
-    function binToHex(bin) {
-      var hex = '';
-      for (i = 0, len = bin.length; i < len; i += MAX_BITS) {
-        var tmp = parseInt(bin.substr(i,MAX_BITS), 2).toString(16);
-        while (tmp.length < MAX_HEX) {
-          tmp = '0' + tmp;
-        }
-        hex += tmp;
-      }
-      return hex;
-    }
+        // ─── Sound Bank ───
+        const sounds = [
+            'sounds/bass_drum.wav',
+            'sounds/snare_drum.wav',
+            'sounds/low_tom.wav',
+            'sounds/mid_tom.wav',
+        ];
 
-    function hexToBin(hex) {
-      var bin = '';
-      for (i = 0, len = hex.length; i < len; i += MAX_HEX) {
-        var tmp = parseInt(hex.substr(i,MAX_HEX), 16).toString(2);
-        while (tmp.length < MAX_BITS) {
-          tmp = '0' + tmp;
-        }
-        bin += tmp;
-      }
-      return bin;
-    }
+        const soundLabels = ['Kick', 'Snare', 'Low Tom', 'Mid Tom'];
 
-    // represent the hash as two 32-bit integers, in hex
-    function updateState() {
-      var state = '';
+        // ─── Audio Context ───
+        const audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+        const buffers = [];
+        const gridEl = document.getElementById('grid');
 
-      Array.from(beats).map(function(btn) {
-        state += btn.classList.contains('on') ? '1' : '0';
-      });
-
-      // TODO: this causes an unnecessary restore state
-      window.location.hash = binToHex(state);
-    }
-
-    function restoreState() {
-      var hash = window.location.hash;
-      hash = (hash === '') ? '0000000000000000' : hash.substr(1); // Remove the first char (#...)
-
-      hexToBin(hash).split('').map(function(el, i) {
-        if (parseInt(el) === 1) {
-          beats[i].classList.add('on');
-        } else {
-          beats[i].classList.remove('on');
-        }
-      });
-    }
-
-    // needed for page history
-    window.addEventListener('hashchange', restoreState, false);
-
-    for (var soundIndex = 0; soundIndex < sLen; ++soundIndex) {
-      (function (index) {
-        // create buffer for sound
-        const req = new XMLHttpRequest();
-        req.open('GET', sounds[index], true);
-        req.responseType = 'arraybuffer';
-        req.onload = function () {
-          audioCtx.decodeAudioData(
-            req.response,
-            function (buffer) {
-              buffers.push(buffer);
+        // ─── Helpers ───
+        function binToHex(bin) {
+            let hex = '';
+            for (let i = 0, len = bin.length; i < len; i += MAX_BITS) {
+                let tmp = parseInt(bin.substr(i, MAX_BITS), 2).toString(16);
+                while (tmp.length < MAX_HEX) tmp = '0' + tmp;
+                hex += tmp;
             }
-          );
-        };
-        req.send();
-      })(soundIndex);
-
-      // create row for sound
-      const fragment = document.createDocumentFragment();
-
-      for (var t = 0; t < TICKS; ++t) {
-        const btn = document.createElement('button');
-        btn.className = 'beat';
-        btn.addEventListener('click', function () {
-          this.classList.toggle('on');
-          updateState();
-        }, false);
-
-        fragment.appendChild(btn);
-      }
-
-      theGrid.appendChild(fragment);
-      theGrid.appendChild(document.createElement('p'));
-    }
-
-    const beats = document.getElementsByClassName('beat');
-
-    var lastTick = TICKS - 1;
-    var curTick = 0;
-
-    var lastTime = new Date().getTime();
-
-    function drumLoop() {
-      const curTime = new Date().getTime();
-
-      if (curTime - lastTime >= INTERVAL) {
-        for (var i = 0; i < sLen; ++i) {
-          const lastBeat = beats[i * TICKS + lastTick];
-          const curBeat = beats[i * TICKS + curTick];
-
-          lastBeat.classList.remove('ticked');
-          curBeat.classList.add('ticked');
-
-          if (curBeat.classList.contains('on')) {
-            try {
-              const source = audioCtx.createBufferSource();
-              source.buffer = buffers[i];
-              source.connect(audioCtx.destination);
-              source.start();
-            } catch (e) {
-              console.error(e.message);
-
-              // Fallback method
-              new Audio(sounds[i]).play();
-            }
-          }
+            return hex;
         }
 
-        lastTick = curTick;
-        curTick = (curTick + 1) % TICKS;
-        lastTime = curTime;
-      }
-      requestAnimationFrame(drumLoop);
-    }
-    // Restore the state before we start the drum loop
-    restoreState();
-    requestAnimationFrame(drumLoop);
+        function hexToBin(hex) {
+            let bin = '';
+            for (let i = 0, len = hex.length; i < len; i += MAX_HEX) {
+                let tmp = parseInt(hex.substr(i, MAX_HEX), 16).toString(2);
+                while (tmp.length < MAX_BITS) tmp = '0' + tmp;
+                bin += tmp;
+            }
+            return bin;
+        }
 
-    // adapted from https://paulbakaus.com/tutorials/html5/web-audio-on-ios/
-    function enableIOSAudio() {
-      const buffer = audioCtx.createBuffer(1, 1, 22050);
-      const source = audioCtx.createBufferSource();
+        // ─── State ───
+        let beats = [];
 
-      source.buffer = buffer;
-      source.connect(audioCtx.destination);
-      source.noteOn(0);
+        function updateState() {
+            let state = '';
+            beats.forEach(btn => { state += btn.classList.contains('on') ? '1' : '0'; });
+            window.location.hash = binToHex(state);
+        }
 
-      window.removeEventListener('touchend', enableIOSAudio, false);
-    }
-    window.addEventListener('touchend', enableIOSAudio, false);
-  </script>
+        function restoreState() {
+            let hash = window.location.hash;
+            hash = (hash === '') ? '0000000000000000' : hash.substr(1);
+            const bin = hexToBin(hash);
+            beats.forEach((btn, i) => {
+                if (parseInt(bin[i]) === 1) btn.classList.add('on');
+                else btn.classList.remove('on');
+            });
+        }
+
+        window.addEventListener('hashchange', restoreState, false);
+
+        // ─── Build Grid ───
+        const sLen = sounds.length;
+
+        // Load sounds
+        for (let i = 0; i < sLen; i++) {
+            (function(index) {
+                const req = new XMLHttpRequest();
+                req.open('GET', sounds[index], true);
+                req.responseType = 'arraybuffer';
+                req.onload = function() {
+                    audioCtx.decodeAudioData(req.response, function(buffer) {
+                        buffers.push(buffer);
+                    });
+                };
+                req.send();
+            })(i);
+        }
+
+        // Build rows
+        for (let row = 0; row < sLen; row++) {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'row';
+
+            const label = document.createElement('span');
+            label.className = 'row-label';
+            label.textContent = soundLabels[row] || `CH ${row + 1}`;
+            rowDiv.appendChild(label);
+
+            for (let t = 0; t < TICKS; t++) {
+                const btn = document.createElement('button');
+                btn.className = 'beat';
+                btn.dataset.row = row;
+                btn.dataset.col = t;
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    this.classList.toggle('on');
+                    updateState();
+                }, false);
+                rowDiv.appendChild(btn);
+            }
+
+            gridEl.appendChild(rowDiv);
+        }
+
+        beats = document.querySelectorAll('.beat');
+
+        // ─── Drum Loop ───
+        let lastTick = TICKS - 1;
+        let curTick = 0;
+        let lastTime = new Date().getTime();
+
+        function drumLoop() {
+            const curTime = new Date().getTime();
+
+            if (curTime - lastTime >= INTERVAL) {
+                for (let i = 0; i < sLen; i++) {
+                    const lastBeat = beats[i * TICKS + lastTick];
+                    const curBeat = beats[i * TICKS + curTick];
+
+                    if (lastBeat) lastBeat.classList.remove('ticked');
+                    if (curBeat) curBeat.classList.add('ticked');
+
+                    if (curBeat && curBeat.classList.contains('on')) {
+                        try {
+                            if (buffers[i]) {
+                                const source = audioCtx.createBufferSource();
+                                source.buffer = buffers[i];
+                                source.connect(audioCtx.destination);
+                                source.start();
+                            } else {
+                                // fallback
+                                new Audio(sounds[i]).play();
+                            }
+                        } catch (e) {
+                            new Audio(sounds[i]).play();
+                        }
+                    }
+                }
+
+                lastTick = curTick;
+                curTick = (curTick + 1) % TICKS;
+                lastTime = curTime;
+            }
+            requestAnimationFrame(drumLoop);
+        }
+
+        restoreState();
+        requestAnimationFrame(drumLoop);
+
+        // ─── iOS Audio Wake ───
+        function enableIOSAudio() {
+            const buffer = audioCtx.createBuffer(1, 1, 22050);
+            const source = audioCtx.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioCtx.destination);
+            source.start();
+            window.removeEventListener('touchend', enableIOSAudio, false);
+        }
+        window.addEventListener('touchend', enableIOSAudio, false);
+
+        // ─── Controls ───
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            beats.forEach(btn => btn.classList.remove('on'));
+            updateState();
+        });
+
+        document.getElementById('loadBtn').addEventListener('click', function() {
+            // reload from URL hash
+            restoreState();
+            // force re-tick visual
+            beats.forEach(b => b.classList.remove('ticked'));
+        });
+
+        document.getElementById('randomBtn').addEventListener('click', function() {
+            beats.forEach(btn => {
+                if (Math.random() > 0.55) btn.classList.add('on');
+                else btn.classList.remove('on');
+            });
+            updateState();
+        });
+
+        // ─── BPM display ───
+        document.getElementById('bpmValue').textContent = BPM;
+
+        // ─── Status ───
+        document.getElementById('statusText').textContent = '● live · ' + TICKS + ' steps · ' + sLen + ' tracks';
+    </script>
+
 </body>
 </html>
