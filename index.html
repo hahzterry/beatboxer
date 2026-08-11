@@ -1,623 +1,1022 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <title>BEAT.HAHZ.LIVE · Beat Machine</title>
-
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="theme-color" content="#050505">
+    <title>BEAT.HAHZ.LIVE — The Beat Machine</title>
     <style>
-        /* ─── Reset & Base ─── */
-        *,
-        *::before,
-        *::after {
+        /* ── reset & base ── */
+        :root {
+            --bg: #050505;
+            --panel: #0b0b0c;
+            --line: rgba(255, 255, 255, .09);
+            --text: #f5f5f5;
+            --muted: #777;
+            --lime: #c8ff00;
+            --pink: #ff2bd6;
+            --orange: #ff6a00;
+        }
+        * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
-
+        html,
         body {
-            background: #0b0b0f;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-            padding: 20px;
-            margin: 0;
+            min-height: 100%;
+        }
+        body {
+            background:
+                radial-gradient(circle at 50% -10%, rgba(200, 255, 0, .09), transparent 35%),
+                radial-gradient(circle at 100% 100%, rgba(255, 43, 214, .06), transparent 30%),
+                #050505;
+            color: var(--text);
+            font-family: Inter, Arial, Helvetica, sans-serif;
+            padding: 18px;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            opacity: .035;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
         }
 
-        /* ─── Main Card ─── */
-        .beat-machine {
-            background: linear-gradient(145deg, #13131a, #1a1a24);
-            border-radius: 40px;
-            padding: 32px 36px 40px;
-            max-width: 900px;
-            width: 100%;
-            box-shadow:
-                0 20px 60px rgba(0, 0, 0, 0.85),
-                inset 0 1px 0 rgba(255, 255, 255, 0.04),
-                0 0 0 1px rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            transition: box-shadow 0.3s;
-        }
-
-        /* ─── Header / Logo ─── */
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 28px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .logo {
-            font-size: 26px;
-            font-weight: 800;
-            letter-spacing: 1.5px;
-            background: linear-gradient(135deg, #c084fc, #7c3aed, #a78bfa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 0 40px rgba(124, 58, 237, 0.25);
-            user-select: none;
-        }
-        .logo span {
-            font-weight: 300;
-            letter-spacing: 2px;
-            background: linear-gradient(135deg, #94a3b8, #cbd5e1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .bpm-display {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: #94a3b8;
-            font-size: 14px;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-            background: rgba(255, 255, 255, 0.03);
-            padding: 8px 18px 8px 16px;
-            border-radius: 100px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .bpm-display .value {
-            font-size: 22px;
-            font-weight: 700;
-            color: #e2e8f0;
-            min-width: 48px;
-            text-align: center;
-            font-variant-numeric: tabular-nums;
-        }
-        .bpm-display .label {
-            opacity: 0.6;
-            font-size: 12px;
-        }
-
-        /* ─── Grid ─── */
-        .grid-wrapper {
-            position: relative;
-            border-radius: 20px;
-            background: rgba(0, 0, 0, 0.4);
-            padding: 4px 4px 4px 0;
-            border: 1px solid rgba(255, 255, 255, 0.04);
+        /* ── machine shell ── */
+        .machine {
+            width: min(1180px, 100%);
+            margin: auto;
+            background: linear-gradient(145deg, #101011, #080809);
+            border: 1px solid var(--line);
+            border-radius: 32px;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, .75), inset 0 1px rgba(255, 255, 255, .06);
             overflow: hidden;
         }
 
-        #grid {
+        /* ── top bar ── */
+        .topbar {
             display: flex;
-            flex-direction: column;
-            gap: 2px;
-            padding: 6px 6px 6px 0;
+            justify-content: space-between;
+            align-items: center;
+            padding: 22px 26px;
+            border-bottom: 1px solid var(--line);
         }
-
-        /* ─── Row ─── */
-        .row {
+        .brand {
             display: flex;
             align-items: center;
-            gap: 2px;
+            gap: 13px;
+        }
+        .brand-mark {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            background: var(--lime);
+            color: #000;
+            font-weight: 1000;
+            font-size: 21px;
+            box-shadow: 0 0 30px rgba(200, 255, 0, .22);
+        }
+        .brand-name {
+            font-size: 20px;
+            font-weight: 1000;
+            letter-spacing: -.8px;
+        }
+        .brand-name span {
+            color: var(--lime);
+        }
+        .brand-sub {
+            color: #666;
+            font-size: 9px;
+            letter-spacing: 2px;
+            margin-top: 3px;
+        }
+        .live {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(200, 255, 0, .2);
+            padding: 8px 13px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: var(--lime);
+            background: rgba(200, 255, 0, .04);
+        }
+        .live-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--lime);
+            box-shadow: 0 0 15px var(--lime);
+            animation: live 1s infinite;
+        }
+        @keyframes live {
+            50% {
+                opacity: .25;
+                transform: scale(.7);
+            }
         }
 
-        .row-label {
-            width: 70px;
-            flex-shrink: 0;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: #64748b;
-            text-align: right;
-            padding-right: 14px;
-            user-select: none;
-            font-family: 'Inter', system-ui, sans-serif;
+        /* ── hero ── */
+        .hero {
+            padding: 34px 28px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 25px;
+        }
+        .eyebrow {
+            color: var(--lime);
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+        .hero h1 {
+            font-size: clamp(38px, 6vw, 76px);
+            line-height: .88;
+            letter-spacing: -5px;
+            font-weight: 1000;
+            max-width: 680px;
+        }
+        .hero h1 span {
+            color: var(--lime);
+        }
+        .hero p {
+            color: #777;
+            margin-top: 16px;
+            font-size: 13px;
+            max-width: 520px;
+        }
+        .stats {
+            display: flex;
+            gap: 9px;
+        }
+        .stat {
+            min-width: 82px;
+            padding: 13px;
+            background: #0c0c0d;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            text-align: center;
+        }
+        .stat strong {
+            display: block;
+            font-size: 18px;
+        }
+        .stat small {
+            color: #555;
+            font-size: 8px;
+            letter-spacing: 1px;
         }
 
-        /* ─── Beat Button ─── */
-        button.beat {
-            flex: 1;
-            aspect-ratio: 1 / 0.85;
-            min-height: 34px;
-            background: rgba(255, 255, 255, 0.04);
-            border: none;
-            border-radius: 8px;
+        /* ── genres ── */
+        .genres {
+            display: flex;
+            gap: 8px;
+            padding: 0 28px 22px;
+            overflow-x: auto;
+        }
+        .genre {
+            flex: 0 0 auto;
+            border: 1px solid var(--line);
+            background: #0b0b0c;
+            color: #888;
+            border-radius: 999px;
+            padding: 9px 15px;
+            font-size: 10px;
+            font-weight: 800;
             cursor: pointer;
-            transition: all 0.12s ease;
-            position: relative;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-            margin: 0;
-            padding: 0;
+            transition: .2s;
+        }
+        .genre:hover,
+        .genre.active {
+            color: #000;
+            background: var(--lime);
+            border-color: var(--lime);
         }
 
-        button.beat::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 8px;
-            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.06), transparent 70%);
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s;
+        /* ── studio ── */
+        .studio {
+            margin: 0 22px 22px;
+            background: #070708;
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            overflow: hidden;
         }
-
-        button.beat:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: scale(1.02);
-        }
-        button.beat:hover::after {
-            opacity: 1;
-        }
-
-        /* Active (programmed) */
-        button.beat.on {
-            background: radial-gradient(circle at 30% 30%, #a78bfa, #7c3aed);
-            box-shadow:
-                0 0 20px rgba(124, 58, 237, 0.35),
-                inset 0 1px 0 rgba(255, 255, 255, 0.15);
-            border-color: transparent;
-        }
-        button.beat.on::after {
-            opacity: 0.6;
-            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2), transparent 70%);
-        }
-
-        /* Current step highlight (ticked) */
-        button.beat.ticked {
-            box-shadow: 0 0 0 2px rgba(192, 132, 252, 0.5), 0 0 30px rgba(124, 58, 237, 0.15);
-            transform: scale(1.04);
-            z-index: 2;
-        }
-
-        button.beat.ticked.on {
-            box-shadow: 0 0 0 2px rgba(192, 132, 252, 0.7), 0 0 40px rgba(124, 58, 237, 0.35);
-        }
-
-        /* ─── Footer Controls ─── */
-        .footer {
+        .toolbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-top: 24px;
-            padding-top: 16px;
-            border-top: 1px solid rgba(255, 255, 255, 0.04);
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .footer-actions {
-            display: flex;
+            padding: 13px;
+            border-bottom: 1px solid var(--line);
             gap: 10px;
+            flex-wrap: wrap;
         }
-
-        .btn {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            color: #cbd5e1;
-            font-size: 13px;
-            font-weight: 500;
-            padding: 8px 20px;
-            border-radius: 100px;
+        .transport {
+            display: flex;
+            gap: 7px;
+        }
+        .tool {
+            height: 38px;
+            padding: 0 14px;
+            border: 1px solid var(--line);
+            background: #111112;
+            color: #aaa;
+            border-radius: 10px;
             cursor: pointer;
-            transition: all 0.2s;
-            font-family: 'Inter', system-ui, sans-serif;
-            letter-spacing: 0.3px;
-            backdrop-filter: blur(4px);
+            font-weight: 800;
+            font-size: 10px;
+            transition: .2s;
         }
-
-        .btn:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.12);
-            color: #f1f5f9;
+        .tool:hover {
+            color: #fff;
+            border-color: #444;
             transform: translateY(-1px);
         }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #7c3aed, #6d28d9);
-            border-color: rgba(124, 58, 237, 0.3);
+        .play {
+            background: var(--lime);
+            color: #000;
+            border-color: var(--lime);
+            min-width: 82px;
+        }
+        .magic {
+            background: linear-gradient(135deg, #ff2bd6, #ff6a00);
             color: #fff;
-            box-shadow: 0 4px 16px rgba(124, 58, 237, 0.2);
+            border: 0;
+            box-shadow: 0 0 25px rgba(255, 43, 214, .15);
         }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-            border-color: rgba(124, 58, 237, 0.5);
-            box-shadow: 0 6px 24px rgba(124, 58, 237, 0.3);
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+        input[type="range"] {
+            width: 100px;
+            accent-color: var(--lime);
+            cursor: pointer;
+        }
+        .bpm {
             color: #fff;
+            font-size: 17px;
+            min-width: 45px;
+            text-align: right;
+            font-weight: 900;
         }
 
-        .btn-danger {
-            background: rgba(239, 68, 68, 0.12);
-            border-color: rgba(239, 68, 68, 0.15);
-            color: #fca5a5;
-        }
-        .btn-danger:hover {
-            background: rgba(239, 68, 68, 0.2);
-            border-color: rgba(239, 68, 68, 0.25);
-            color: #fecaca;
-        }
-
-        .status-text {
-            color: #475569;
-            font-size: 12px;
-            font-weight: 400;
-            letter-spacing: 0.3px;
-            opacity: 0.6;
-        }
-
-        /* ─── Responsive ─── */
-        @media (max-width: 700px) {
-            .beat-machine {
-                padding: 20px 16px 28px;
-                border-radius: 28px;
-            }
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 12px;
-                padding-bottom: 12px;
-            }
-            .logo {
-                font-size: 22px;
-            }
-            .bpm-display {
-                font-size: 12px;
-                padding: 6px 14px 6px 12px;
-            }
-            .bpm-display .value {
-                font-size: 18px;
-                min-width: 36px;
-            }
-            .row-label {
-                width: 48px;
-                font-size: 9px;
-                padding-right: 8px;
-            }
-            button.beat {
-                min-height: 26px;
-                border-radius: 6px;
-            }
-            .footer {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 12px;
-            }
-            .footer-actions {
-                justify-content: center;
-                flex-wrap: wrap;
-            }
-            .btn {
-                font-size: 12px;
-                padding: 6px 14px;
-            }
-        }
-
-        @media (max-width: 420px) {
-            .beat-machine {
-                padding: 14px 10px 20px;
-                border-radius: 20px;
-            }
-            .row-label {
-                width: 36px;
-                font-size: 8px;
-                padding-right: 4px;
-            }
-            button.beat {
-                min-height: 18px;
-                border-radius: 4px;
-            }
-            .logo {
-                font-size: 18px;
-            }
-            .bpm-display .value {
-                font-size: 15px;
-                min-width: 30px;
-            }
-        }
-
-        /* ─── Scrollable grid on tiny screens ─── */
-        .grid-scroll {
+        /* ── grid ── */
+        .grid-container {
+            position: relative;
             overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            padding-bottom: 2px;
+            padding: 16px;
         }
-        .grid-scroll::-webkit-scrollbar {
-            height: 4px;
+        .grid {
+            min-width: 760px;
+            position: relative;
         }
-        .grid-scroll::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.02);
+        .step-numbers {
+            display: grid;
+            grid-template-columns: 90px repeat(16, 1fr);
+            gap: 5px;
+            margin-bottom: 7px;
+        }
+        .step-number {
+            color: #444;
+            font-size: 8px;
+            text-align: center;
+            font-weight: 800;
+        }
+        .step-number.accent {
+            color: #888;
+        }
+        .row {
+            display: grid;
+            grid-template-columns: 90px repeat(16, 1fr);
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+        .row-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #777;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+        .sound-icon {
+            width: 25px;
+            height: 25px;
+            display: grid;
+            place-items: center;
+            border: 1px solid #292929;
+            border-radius: 7px;
+            font-size: 11px;
+            color: #aaa;
+        }
+        .pad {
+            position: relative;
+            aspect-ratio: 1;
             border-radius: 8px;
+            border: 1px solid #19191a;
+            background: #101011;
+            cursor: pointer;
+            transition: transform .08s, background .1s, box-shadow .1s;
         }
-        .grid-scroll::-webkit-scrollbar-thumb {
-            background: rgba(124, 58, 237, 0.3);
-            border-radius: 8px;
+        .pad:hover {
+            background: #181819;
+            transform: translateY(-1px);
+        }
+        .pad.on {
+            background: radial-gradient(circle at 30% 25%, #efffa8, #c8ff00 45%, #7aa500);
+            border-color: var(--lime);
+            box-shadow: 0 0 18px rgba(200, 255, 0, .28), inset 0 1px rgba(255, 255, 255, .6);
+        }
+        .pad.on::after {
+            content: "";
+            position: absolute;
+            inset: 4px;
+            border-radius: 5px;
+            border: 1px solid rgba(0, 0, 0, .15);
+        }
+        .pad.playing {
+            transform: scale(1.09);
+            z-index: 3;
+            box-shadow: 0 0 0 2px #fff, 0 0 30px rgba(200, 255, 0, .7);
+        }
+        .pad.playing.on {
+            background: #eaff85;
         }
 
-        /* ─── Animations ─── */
-        @keyframes pulse-glow {
-            0%,
-            100% {
-                opacity: 0.6;
-            }
-            50% {
-                opacity: 1;
-            }
+        /* ── playhead ── */
+        .playhead {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--lime);
+            box-shadow: 0 0 18px var(--lime);
+            opacity: 0;
+            pointer-events: none;
+            transition: left .06s linear;
+            z-index: 5;
         }
-        .beat.ticked {
-            animation: pulse-glow 0.6s ease-in-out infinite;
+        .playing-grid .playhead {
+            opacity: .65;
         }
 
-        /* ─── Live indicator dot ─── */
-        .live-dot {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #22c55e;
-            margin-right: 8px;
-            box-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
-            animation: pulse-dot 1.4s ease-in-out infinite;
+        /* ── bottom bar ── */
+        .bottom {
+            padding: 16px;
+            border-top: 1px solid var(--line);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
         }
-        @keyframes pulse-dot {
-            0%,
-            100% {
-                opacity: 1;
-                transform: scale(1);
+        .bottom-left,
+        .bottom-right {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .action {
+            border: 1px solid var(--line);
+            background: #0d0d0e;
+            color: #aaa;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: .5px;
+        }
+        .action:hover {
+            color: #fff;
+            border-color: #444;
+        }
+        .share {
+            background: var(--lime);
+            color: #000;
+            border-color: var(--lime);
+        }
+
+        /* ── pattern slots ── */
+        .patterns {
+            padding: 0 22px 22px;
+        }
+        .pattern-title {
+            color: #555;
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            margin-bottom: 9px;
+        }
+        .slots {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        .slot {
+            border: 1px solid var(--line);
+            background: #0a0a0b;
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            color: #555;
+            font-size: 9px;
+            font-weight: 900;
+        }
+        .slot.active {
+            border-color: var(--lime);
+            color: var(--lime);
+            box-shadow: inset 0 0 20px rgba(200, 255, 0, .03);
+        }
+
+        /* ── status ── */
+        .status {
+            padding: 0 28px 25px;
+            color: #444;
+            font-size: 9px;
+            display: flex;
+            justify-content: space-between;
+            letter-spacing: 1px;
+        }
+        .status span:first-child {
+            color: #777;
+        }
+
+        /* ── responsive ── */
+        @media (max-width: 700px) {
+            body {
+                padding: 8px;
             }
-            50% {
-                opacity: 0.3;
-                transform: scale(0.85);
+            .machine {
+                border-radius: 22px;
+            }
+            .topbar {
+                padding: 16px;
+            }
+            .brand-mark {
+                width: 35px;
+                height: 35px;
+            }
+            .brand-name {
+                font-size: 16px;
+            }
+            .hero {
+                display: block;
+                padding: 27px 18px 20px;
+            }
+            .hero h1 {
+                letter-spacing: -3px;
+            }
+            .hero p {
+                font-size: 12px;
+            }
+            .stats {
+                margin-top: 20px;
+            }
+            .genres {
+                padding-left: 18px;
+                padding-right: 18px;
+            }
+            .studio {
+                margin: 0 8px 12px;
+                border-radius: 18px;
+            }
+            .toolbar {
+                padding: 10px;
+            }
+            .controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+            input[type="range"] {
+                flex: 1;
+                width: auto;
+            }
+            .grid-container {
+                padding: 10px;
+            }
+            .bottom {
+                padding: 12px;
+            }
+            .status {
+                padding: 0 18px 18px;
+            }
+            .live {
+                padding: 7px 9px;
             }
         }
     </style>
 </head>
 <body>
 
-    <div class="beat-machine">
+    <div class="machine">
 
-        <!-- ─── Header ─── -->
-        <div class="header">
-            <div class="logo">
-                BEAT<span>.HAHZ.LIVE</span>
+        <!-- top bar -->
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-mark">B</div>
+                <div>
+                    <div class="brand-name">BEAT<span>.HAHZ.LIVE</span></div>
+                    <div class="brand-sub">THE INTERNET'S BEAT MACHINE</div>
+                </div>
             </div>
-            <div class="bpm-display">
-                <span class="live-dot"></span>
-                <span class="label">BPM</span>
-                <span class="value" id="bpmValue">120</span>
+            <div class="live"><i class="live-dot"></i>LIVE</div>
+        </header>
+
+        <!-- hero -->
+        <section class="hero">
+            <div>
+                <div class="eyebrow">PRODUCE WITHOUT LIMITS</div>
+                <h1>MAKE SOMETHING<br>THAT <span>SLAPS.</span></h1>
+                <p>Tap the grid. Flip the pattern. Share the beat. Every beat you make can become somebody else's starting point.</p>
             </div>
+            <div class="stats">
+                <div class="stat"><strong>16</strong><small>STEPS</small></div>
+                <div class="stat"><strong>4</strong><small>TRACKS</small></div>
+                <div class="stat"><strong id="shareCount">0</strong><small>REMIXES</small></div>
+            </div>
+        </section>
+
+        <!-- genres -->
+        <div class="genres">
+            <button class="genre active" data-genre="TRAP">TRAP</button>
+            <button class="genre" data-genre="DRILL">DRILL</button>
+            <button class="genre" data-genre="R&B">R&B</button>
+            <button class="genre" data-genre="AFRO">AFROBEATS</button>
+            <button class="genre" data-genre="JERSEY">JERSEY CLUB</button>
+            <button class="genre" data-genre="BOOM">BOOM BAP</button>
+            <button class="genre" data-genre="CUSTOM">CUSTOM</button>
         </div>
 
-        <!-- ─── Grid ─── -->
-        <div class="grid-scroll">
-            <div class="grid-wrapper">
-                <div id="grid"></div>
-            </div>
-        </div>
+        <!-- studio -->
+        <section class="studio">
 
-        <!-- ─── Footer ─── -->
-        <div class="footer">
-            <div class="footer-actions">
-                <button class="btn btn-danger" id="clearBtn">✕ Clear Grid</button>
-                <button class="btn" id="loadBtn">↻ Load Beat</button>
-                <button class="btn btn-primary" id="randomBtn">✦ Random</button>
+            <!-- toolbar -->
+            <div class="toolbar">
+                <div class="transport">
+                    <button class="tool play" id="playBtn">▶ PLAY</button>
+                    <button class="tool" id="clearBtn">CLEAR</button>
+                    <button class="tool magic" id="flipBtn">✦ AI FLIP</button>
+                </div>
+                <div class="controls">
+                    <div class="control">
+                        BPM <input id="bpmSlider" type="range" min="60" max="180" value="140">
+                        <span class="bpm" id="bpmValue">140</span>
+                    </div>
+                    <div class="control">
+                        SWING <input id="swingSlider" type="range" min="0" max="100" value="50">
+                    </div>
+                </div>
             </div>
-            <span class="status-text" id="statusText">● live · 16 steps</span>
+
+            <!-- grid -->
+            <div class="grid-container">
+                <div class="grid" id="grid">
+                    <div class="playhead" id="playhead"></div>
+
+                    <div class="step-numbers">
+                        <div></div>
+                        <div class="step-number accent">1</div>
+                        <div class="step-number">2</div>
+                        <div class="step-number">3</div>
+                        <div class="step-number">4</div>
+                        <div class="step-number accent">5</div>
+                        <div class="step-number">6</div>
+                        <div class="step-number">7</div>
+                        <div class="step-number">8</div>
+                        <div class="step-number accent">9</div>
+                        <div class="step-number">10</div>
+                        <div class="step-number">11</div>
+                        <div class="step-number">12</div>
+                        <div class="step-number accent">13</div>
+                        <div class="step-number">14</div>
+                        <div class="step-number">15</div>
+                        <div class="step-number">16</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- bottom -->
+            <div class="bottom">
+                <div class="bottom-left">
+                    <button class="action" id="randomBtn">🎲 RANDOM</button>
+                    <button class="action" id="remixBtn">↻ REMIX</button>
+                    <button class="action" id="saveBtn">＋ SAVE SLOT</button>
+                </div>
+                <div class="bottom-right">
+                    <button class="action share" id="shareBtn">↗ SHARE BEAT</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- pattern memory -->
+        <section class="patterns">
+            <div class="pattern-title">PATTERN MEMORY</div>
+            <div class="slots">
+                <button class="slot active" data-slot="0">A — MAIN</button>
+                <button class="slot" data-slot="1">B — SWITCH</button>
+                <button class="slot" data-slot="2">C — DROP</button>
+                <button class="slot" data-slot="3">D — OUTRO</button>
+            </div>
+        </section>
+
+        <!-- status -->
+        <div class="status">
+            <span id="status">● READY — TAP A PAD TO START COOKING</span>
+            <span>BEAT.HAHZ.LIVE</span>
         </div>
 
     </div>
 
     <script>
-        // ─── Configuration ───
-        const BPM = 120;
-        const TICKS = 16;
-        const INTERVAL = 1 / (4 * BPM / (60 * 1000));
-        const MAX_BITS = 32;
-        const MAX_HEX = MAX_BITS / 4;
+        // ──────────────────────────────────────
+        //  CONSTANTS & STATE
+        // ──────────────────────────────────────
 
-        // ─── Sound Bank ───
+        const ROWS = 4,
+            STEPS = 16;
         const sounds = [
-            'sounds/bass_drum.wav',
-            'sounds/snare_drum.wav',
-            'sounds/low_tom.wav',
-            'sounds/mid_tom.wav',
+            "sounds/bass_drum.wav",
+            "sounds/snare_drum.wav",
+            "sounds/low_tom.wav",
+            "sounds/mid_tom.wav"
+        ];
+        const labels = [
+            ["KICK", "🥁"],
+            ["SNARE", "◈"],
+            ["LOW TOM", "●"],
+            ["MID TOM", "◆"]
         ];
 
-        const soundLabels = ['Kick', 'Snare', 'Low Tom', 'Mid Tom'];
-
-        // ─── Audio Context ───
         const audioCtx = new(window.AudioContext || window.webkitAudioContext)();
-        const buffers = [];
-        const gridEl = document.getElementById('grid');
+        let buffers = [];
+        let bpm = 140,
+            swing = 50,
+            playing = false,
+            currentStep = 0,
+            timer = null;
+        let pattern = Array.from({ length: ROWS }, () => Array(STEPS).fill(false));
+        let patterns = [null, null, null, null];
 
-        // ─── Helpers ───
-        function binToHex(bin) {
-            let hex = '';
-            for (let i = 0, len = bin.length; i < len; i += MAX_BITS) {
-                let tmp = parseInt(bin.substr(i, MAX_BITS), 2).toString(16);
-                while (tmp.length < MAX_HEX) tmp = '0' + tmp;
-                hex += tmp;
-            }
-            return hex;
-        }
+        // DOM refs
+        const grid = document.getElementById("grid");
+        const playhead = document.getElementById("playhead");
+        const playBtn = document.getElementById("playBtn");
+        const bpmSlider = document.getElementById("bpmSlider");
+        const bpmValue = document.getElementById("bpmValue");
+        const swingSlider = document.getElementById("swingSlider");
+        const status = document.getElementById("status");
 
-        function hexToBin(hex) {
-            let bin = '';
-            for (let i = 0, len = hex.length; i < len; i += MAX_HEX) {
-                let tmp = parseInt(hex.substr(i, MAX_HEX), 16).toString(2);
-                while (tmp.length < MAX_BITS) tmp = '0' + tmp;
-                bin += tmp;
-            }
-            return bin;
-        }
+        // ──────────────────────────────────────
+        //  SOUND LOADING
+        // ──────────────────────────────────────
 
-        // ─── State ───
-        let beats = [];
-
-        function updateState() {
-            let state = '';
-            beats.forEach(btn => { state += btn.classList.contains('on') ? '1' : '0'; });
-            window.location.hash = binToHex(state);
-        }
-
-        function restoreState() {
-            let hash = window.location.hash;
-            hash = (hash === '') ? '0000000000000000' : hash.substr(1);
-            const bin = hexToBin(hash);
-            beats.forEach((btn, i) => {
-                if (parseInt(bin[i]) === 1) btn.classList.add('on');
-                else btn.classList.remove('on');
-            });
-        }
-
-        window.addEventListener('hashchange', restoreState, false);
-
-        // ─── Build Grid ───
-        const sLen = sounds.length;
-
-        // Load sounds
-        for (let i = 0; i < sLen; i++) {
-            (function(index) {
-                const req = new XMLHttpRequest();
-                req.open('GET', sounds[index], true);
-                req.responseType = 'arraybuffer';
-                req.onload = function() {
-                    audioCtx.decodeAudioData(req.response, function(buffer) {
-                        buffers.push(buffer);
-                    });
-                };
-                req.send();
-            })(i);
-        }
-
-        // Build rows
-        for (let row = 0; row < sLen; row++) {
-            const rowDiv = document.createElement('div');
-            rowDiv.className = 'row';
-
-            const label = document.createElement('span');
-            label.className = 'row-label';
-            label.textContent = soundLabels[row] || `CH ${row + 1}`;
-            rowDiv.appendChild(label);
-
-            for (let t = 0; t < TICKS; t++) {
-                const btn = document.createElement('button');
-                btn.className = 'beat';
-                btn.dataset.row = row;
-                btn.dataset.col = t;
-                btn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    this.classList.toggle('on');
-                    updateState();
-                }, false);
-                rowDiv.appendChild(btn);
-            }
-
-            gridEl.appendChild(rowDiv);
-        }
-
-        beats = document.querySelectorAll('.beat');
-
-        // ─── Drum Loop ───
-        let lastTick = TICKS - 1;
-        let curTick = 0;
-        let lastTime = new Date().getTime();
-
-        function drumLoop() {
-            const curTime = new Date().getTime();
-
-            if (curTime - lastTime >= INTERVAL) {
-                for (let i = 0; i < sLen; i++) {
-                    const lastBeat = beats[i * TICKS + lastTick];
-                    const curBeat = beats[i * TICKS + curTick];
-
-                    if (lastBeat) lastBeat.classList.remove('ticked');
-                    if (curBeat) curBeat.classList.add('ticked');
-
-                    if (curBeat && curBeat.classList.contains('on')) {
-                        try {
-                            if (buffers[i]) {
-                                const source = audioCtx.createBufferSource();
-                                source.buffer = buffers[i];
-                                source.connect(audioCtx.destination);
-                                source.start();
-                            } else {
-                                // fallback
-                                new Audio(sounds[i]).play();
-                            }
-                        } catch (e) {
-                            new Audio(sounds[i]).play();
-                        }
-                    }
+        async function loadSounds() {
+            for (const file of sounds) {
+                try {
+                    const r = await fetch(file);
+                    const b = await r.arrayBuffer();
+                    buffers.push(await audioCtx.decodeAudioData(b));
+                } catch (_) {
+                    buffers.push(null);
                 }
-
-                lastTick = curTick;
-                curTick = (curTick + 1) % TICKS;
-                lastTime = curTime;
             }
-            requestAnimationFrame(drumLoop);
+        }
+        loadSounds();
+
+        // ──────────────────────────────────────
+        //  GRID BUILDING
+        // ──────────────────────────────────────
+
+        function buildGrid() {
+            document.querySelectorAll(".beat-row").forEach(el => el.remove());
+            for (let row = 0; row < ROWS; row++) {
+                const rowDiv = document.createElement("div");
+                rowDiv.className = "row beat-row";
+
+                const label = document.createElement("div");
+                label.className = "row-label";
+                label.innerHTML =
+                    `<span class="sound-icon">${labels[row][1]}</span>${labels[row][0]}`;
+                rowDiv.appendChild(label);
+
+                for (let step = 0; step < STEPS; step++) {
+                    const pad = document.createElement("button");
+                    pad.className = "pad";
+                    pad.dataset.row = row;
+                    pad.dataset.step = step;
+                    if (pattern[row][step]) pad.classList.add("on");
+
+                    pad.addEventListener("click", async () => {
+                        if (audioCtx.state === "suspended") await audioCtx.resume();
+                        pattern[row][step] = !pattern[row][step];
+                        pad.classList.toggle("on", pattern[row][step]);
+                        saveToURL();
+                        status.textContent = "● BEAT UPDATED — KEEP COOKING";
+                    });
+
+                    rowDiv.appendChild(pad);
+                }
+                grid.appendChild(rowDiv);
+            }
+        }
+        buildGrid();
+
+        // ──────────────────────────────────────
+        //  PLAYBACK
+        // ──────────────────────────────────────
+
+        function playSound(row) {
+            if (!buffers[row]) return;
+            const src = audioCtx.createBufferSource();
+            src.buffer = buffers[row];
+            const gain = audioCtx.createGain();
+            gain.gain.value = .9;
+            src.connect(gain);
+            gain.connect(audioCtx.destination);
+            src.start();
         }
 
-        restoreState();
-        requestAnimationFrame(drumLoop);
-
-        // ─── iOS Audio Wake ───
-        function enableIOSAudio() {
-            const buffer = audioCtx.createBuffer(1, 1, 22050);
-            const source = audioCtx.createBufferSource();
-            source.buffer = buffer;
-            source.connect(audioCtx.destination);
-            source.start();
-            window.removeEventListener('touchend', enableIOSAudio, false);
-        }
-        window.addEventListener('touchend', enableIOSAudio, false);
-
-        // ─── Controls ───
-        document.getElementById('clearBtn').addEventListener('click', function() {
-            beats.forEach(btn => btn.classList.remove('on'));
-            updateState();
-        });
-
-        document.getElementById('loadBtn').addEventListener('click', function() {
-            // reload from URL hash
-            restoreState();
-            // force re-tick visual
-            beats.forEach(b => b.classList.remove('ticked'));
-        });
-
-        document.getElementById('randomBtn').addEventListener('click', function() {
-            beats.forEach(btn => {
-                if (Math.random() > 0.55) btn.classList.add('on');
-                else btn.classList.remove('on');
+        function step() {
+            document.querySelectorAll(".pad.playing").forEach(p => p.classList.remove("playing"));
+            document.querySelectorAll(`.pad[data-step="${currentStep}"]`).forEach(p => {
+                p.classList.add("playing");
+                const row = Number(p.dataset.row);
+                if (pattern[row][currentStep]) playSound(row);
             });
-            updateState();
+
+            const p = document.querySelector(`.pad[data-step="${currentStep}"]`);
+            if (p) {
+                const r = p.getBoundingClientRect();
+                const g = grid.getBoundingClientRect();
+                playhead.style.left = `${r.left - g.left}px`;
+            }
+            currentStep = (currentStep + 1) % STEPS;
+        }
+
+        function schedule() {
+            if (!playing) return;
+            const beatLength = 60000 / bpm / 4;
+            const swingAmount = swing / 100;
+            const delay = currentStep % 2 === 1 ?
+                beatLength * (1 + (swingAmount - .5) * .5) :
+                beatLength;
+            timer = setTimeout(() => { step();
+                schedule(); }, delay);
+        }
+
+        function start() {
+            if (playing) return;
+            playing = true;
+            if (audioCtx.state === "suspended") audioCtx.resume();
+            playBtn.textContent = "■ STOP";
+            playBtn.style.background = "#ff3030";
+            playBtn.style.borderColor = "#ff3030";
+            playBtn.style.color = "#fff";
+            grid.classList.add("playing-grid");
+            status.textContent = "● PLAYING — LET IT COOK";
+            step();
+            schedule();
+        }
+
+        function stop() {
+            playing = false;
+            clearTimeout(timer);
+            document.querySelectorAll(".pad.playing").forEach(p => p.classList.remove("playing"));
+            playBtn.textContent = "▶ PLAY";
+            playBtn.style.background = "";
+            playBtn.style.borderColor = "";
+            playBtn.style.color = "";
+            grid.classList.remove("playing-grid");
+            status.textContent = "● READY — TAP A PAD TO START COOKING";
+        }
+
+        playBtn.onclick = () => playing ? stop() : start();
+
+        // ──────────────────────────────────────
+        //  BPM / SWING
+        // ──────────────────────────────────────
+
+        bpmSlider.oninput = () => {
+            bpm = Number(bpmSlider.value);
+            bpmValue.textContent = bpm;
+        };
+        swingSlider.oninput = () => {
+            swing = Number(swingSlider.value);
+        };
+
+        // ──────────────────────────────────────
+        //  ACTIONS
+        // ──────────────────────────────────────
+
+        document.getElementById("clearBtn").onclick = () => {
+            pattern = Array.from({ length: ROWS }, () => Array(STEPS).fill(false));
+            buildGrid();
+            saveToURL();
+            status.textContent = "● GRID CLEARED — START FRESH";
+        };
+
+        document.getElementById("randomBtn").onclick = () => {
+            for (let r = 0; r < ROWS; r++)
+                for (let s = 0; s < STEPS; s++) {
+                    const prob = r === 0 ? .45 : r === 1 ? .28 : r === 2 ? .20 : .25;
+                    pattern[r][s] = Math.random() < prob;
+                }
+            buildGrid();
+            saveToURL();
+            status.textContent = "✦ RANDOM BEAT GENERATED";
+        };
+
+        document.getElementById("flipBtn").onclick = () => {
+            for (let r = 0; r < ROWS; r++)
+                for (let s = 0; s < STEPS; s++)
+                    if (Math.random() < .28) pattern[r][s] = !pattern[r][s];
+            buildGrid();
+            saveToURL();
+            status.textContent = "✦ AI FLIP — NEW ENERGY UNLOCKED";
+        };
+
+        document.getElementById("remixBtn").onclick = () => {
+            for (let r = 0; r < ROWS; r++)
+                pattern[r] = pattern[r].map(v => Math.random() < .2 ? !v : v);
+            buildGrid();
+            saveToURL();
+            status.textContent = "↻ REMIXED — SAME DNA, NEW BEAT";
+        };
+
+        // ──────────────────────────────────────
+        //  GENRES
+        // ──────────────────────────────────────
+
+        document.querySelectorAll(".genre").forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll(".genre").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                applyGenre(btn.dataset.genre);
+            };
         });
 
-        // ─── BPM display ───
-        document.getElementById('bpmValue').textContent = BPM;
+        function clearPattern() {
+            pattern = Array.from({ length: ROWS }, () => Array(STEPS).fill(false));
+        }
 
-        // ─── Status ───
-        document.getElementById('statusText').textContent = '● live · ' + TICKS + ' steps · ' + sLen + ' tracks';
+        function applyGenre(genre) {
+            clearPattern();
+            const presets = {
+                TRAP: [
+                    [0, 4, 8, 12],
+                    [4, 12],
+                    [2, 6, 10, 14],
+                    []
+                ],
+                DRILL: [
+                    [0, 3, 7, 10, 14],
+                    [4, 12],
+                    [],
+                    [1, 3, 5, 7, 9, 11, 13, 15]
+                ],
+                "R&B": [
+                    [0, 6, 8, 12],
+                    [4, 12],
+                    [],
+                    [2, 6, 10, 14]
+                ],
+                AFRO: [
+                    [0, 3, 6, 8, 11, 14],
+                    [4, 12],
+                    [],
+                    [2, 5, 8, 10, 13, 15]
+                ],
+                JERSEY: [
+                    [0, 3, 6, 9, 12, 15],
+                    [4, 7, 12, 15],
+                    [1, 5, 9, 13],
+                    []
+                ],
+                BOOM: [
+                    [0, 6, 8, 14],
+                    [4, 12],
+                    [],
+                    [2, 6, 10, 14]
+                ],
+                CUSTOM: []
+            };
+            (presets[genre] || []).forEach((steps, row) =>
+                steps.forEach(i => pattern[row][i] = true)
+            );
+            buildGrid();
+            saveToURL();
+            status.textContent = `${genre} MODE — BEAT LOADED`;
+        }
+
+        // ──────────────────────────────────────
+        //  PATTERN SLOTS
+        // ──────────────────────────────────────
+
+        document.querySelectorAll(".slot").forEach(slot => {
+            slot.onclick = () => {
+                const i = Number(slot.dataset.slot);
+                document.querySelectorAll(".slot").forEach(s => s.classList.remove("active"));
+                slot.classList.add("active");
+                if (patterns[i]) {
+                    pattern = JSON.parse(JSON.stringify(patterns[i]));
+                    buildGrid();
+                    status.textContent = `PATTERN ${i + 1} LOADED`;
+                } else {
+                    patterns[i] = JSON.parse(JSON.stringify(pattern));
+                    status.textContent = `PATTERN ${i + 1} SAVED`;
+                }
+            };
+        });
+
+        document.getElementById("saveBtn").onclick = () => {
+            const active = document.querySelector(".slot.active");
+            const i = Number(active.dataset.slot);
+            patterns[i] = JSON.parse(JSON.stringify(pattern));
+            status.textContent = `✓ ${active.textContent} SAVED`;
+        };
+
+        // ──────────────────────────────────────
+        //  URL ENCODING / SHARING
+        // ──────────────────────────────────────
+
+        function encodePattern() {
+            let bits = "";
+            pattern.forEach(row => row.forEach(v => bits += v ? "1" : "0"));
+            const n = BigInt("0b" + bits);
+            return n.toString(36);
+        }
+
+        function decodePattern(code) {
+            try {
+                const n = BigInt(parseInt(code, 36));
+                let bits = n.toString(2).padStart(ROWS * STEPS, "0").slice(-(ROWS * STEPS));
+                let i = 0;
+                for (let r = 0; r < ROWS; r++)
+                    for (let s = 0; s < STEPS; s++)
+                        pattern[r][s] = bits[i++] === "1";
+                buildGrid();
+            } catch (_) { /* ignore invalid */ }
+        }
+
+        function saveToURL() {
+            history.replaceState(null, "", "#" + encodePattern());
+        }
+
+        document.getElementById("shareBtn").onclick = async () => {
+            saveToURL();
+            const url = location.href;
+            try {
+                await navigator.clipboard.writeText(url);
+                status.textContent = "↗ BEAT LINK COPIED — SEND IT TO THE WORLD";
+                const c = document.getElementById("shareCount");
+                c.textContent = Number(c.textContent) + 1;
+            } catch (_) {
+                prompt("Copy your beat link:", url);
+            }
+        };
+
+        // ──────────────────────────────────────
+        //  RESTORE FROM URL
+        // ──────────────────────────────────────
+
+        if (location.hash) decodePattern(location.hash.substring(1));
+
+        // ──────────────────────────────────────
+        //  KEYBOARD SHORTCUT
+        // ──────────────────────────────────────
+
+        document.addEventListener("keydown", e => {
+            if (e.code === "Space") {
+                e.preventDefault();
+                playing ? stop() : start();
+            }
+        });
+
+        // resume audio context on first touch
+        document.addEventListener("touchstart", () => {
+            if (audioCtx.state === "suspended") audioCtx.resume();
+        }, { once: true });
     </script>
 
 </body>
