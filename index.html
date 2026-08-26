@@ -318,118 +318,397 @@
 
 <script>
 // ─────────────────────────────────────────────────────────────────────────────
-//  iOS-PROOF AUDIO ENGINE – NO AWAIT IN playSound()
+// BEAT.HAHZ.LIVE — iOS / SAFARI SAFE AUDIO ENGINE
 // ─────────────────────────────────────────────────────────────────────────────
 
 let audioCtx = null;
+let masterGain = null;
 let drumBuffers = [];
 
-function getAudioContext() {
+const ROWS = 4;
+const STEPS = 16;
+
+const labels = [
+    ["KICK", "🥁"],
+    ["SNARE", "◈"],
+    ["LOW TOM", "●"],
+    ["MID TOM", "◆"]
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CREATE AUDIO ENGINE
+// ─────────────────────────────────────────────────────────────────────────────
+
+function initAudio() {
+
     if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        console.log(`🔊 Created AudioContext, state: ${audioCtx.state}`);
+
+        const AudioContextClass =
+            window.AudioContext ||
+            window.webkitAudioContext;
+
+        if (!AudioContextClass) {
+            console.error("Web Audio API unavailable.");
+            return false;
+        }
+
+        audioCtx = new AudioContextClass();
+
+        masterGain = audioCtx.createGain();
+        masterGain.gain.value = 0.85;
+
+        masterGain.connect(audioCtx.destination);
+
+        console.log(
+            "🔊 AudioContext created:",
+            audioCtx.state
+        );
+
+        drumBuffers = createDrumBuffers();
     }
-    return audioCtx;
+
+    return true;
 }
 
-function generateBuffers(ctx) {
-    const sr = ctx.sampleRate;
-    // Kick
-    const kickLen = sr * 0.4;
-    const kickBuf = ctx.createBuffer(1, kickLen, sr);
-    const kd = kickBuf.getChannelData(0);
-    for (let i = 0; i < kickLen; i++) {
-        const t = i / sr;
-        const env = Math.exp(-t * 12);
-        const freq = 80 + 120 * Math.exp(-t * 22);
-        const click = Math.exp(-t * 80) * 0.15;
-        kd[i] = (Math.sin(2 * Math.PI * freq * t) * env * 0.8) + click;
-    }
-    // Snare
-    const snareLen = sr * 0.25;
-    const snareBuf = ctx.createBuffer(1, snareLen, sr);
-    const sd = snareBuf.getChannelData(0);
-    for (let i = 0; i < snareLen; i++) {
-        const t = i / sr;
-        const env = Math.exp(-t * 18);
-        const noise = (Math.random() * 2 - 1) * env * 0.7;
-        const tone = Math.sin(2 * Math.PI * 180 * t) * Math.exp(-t * 15) * 0.4;
-        sd[i] = noise + tone;
-    }
-    // Low Tom
-    const tomLen = sr * 0.3;
-    const lowTom = ctx.createBuffer(1, tomLen, sr);
-    const ld = lowTom.getChannelData(0);
-    for (let i = 0; i < tomLen; i++) {
-        const t = i / sr;
-        ld[i] = Math.sin(2 * Math.PI * 120 * t) * Math.exp(-t * 8) * 0.9;
-    }
-    // Mid Tom
-    const midTom = ctx.createBuffer(1, tomLen, sr);
-    const md = midTom.getChannelData(0);
-    for (let i = 0; i < tomLen; i++) {
-        const t = i / sr;
-        md[i] = Math.sin(2 * Math.PI * 180 * t) * Math.exp(-t * 8) * 0.9;
-    }
-    return [kickBuf, snareBuf, lowTom, midTom];
-}
+// ─────────────────────────────────────────────────────────────────────────────
+// UNLOCK AUDIO
+// IMPORTANT: CALL DIRECTLY FROM pointerdown
+// ─────────────────────────────────────────────────────────────────────────────
 
-// ---- The critical function: NO async, NO await ----
-function playSound(row) {
-    const ctx = getAudioContext();
-    if (drumBuffers.length === 0) {
-        drumBuffers = generateBuffers(ctx);
-        console.log("🎵 Drum buffers generated");
+function unlockAudio() {
+
+    if (!initAudio()) {
+        return false;
     }
-    // Resume if suspended – fire and forget (no await)
-    if (ctx.state === "suspended") {
-        ctx.resume();
-        console.log("⏳ Resuming AudioContext...");
-    }
-    // Immediately create and start source – it will play when context resumes
+
     try {
-        const src = ctx.createBufferSource();
-        src.buffer = drumBuffers[row];
-        const gain = ctx.createGain();
-        gain.gain.value = 0.9;
-        src.connect(gain);
-        gain.connect(ctx.destination);
-        src.start();
-        console.log(`🔊 Playing row ${row}`);
-    } catch (e) {
-        console.warn("Playback error:", e);
+
+        // Safari can start in suspended/interrupted state.
+        if (audioCtx.state !== "running") {
+
+            const resumePromise = audioCtx.resume();
+
+            // Don't wait here before triggering audio.
+            if (resumePromise) {
+                resumePromise.catch(err => {
+                    console.warn(
+                        "Audio resume error:",
+                        err
+                    );
+                });
+            }
+        }
+
+        // Create a tiny silent oscillator DURING the user gesture.
+        // This helps establish audio playback on iOS Safari.
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        gain.gain.value = 0.00001;
+
+        osc.connect(gain);
+        gain.connect(masterGain);
+
+        osc.start();
+
+        osc.stop(
+            audioCtx.currentTime + 0.02
+        );
+
+        console.log(
+            "🔓 Audio unlock attempted:",
+            audioCtx.state
+        );
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "❌ Audio unlock failed:",
+            error
+        );
+
+        return false;
     }
 }
 
-// ---- Attach test button ----
-document.getElementById("testBtn").addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    playSound(0);
-});
+// ─────────────────────────────────────────────────────────────────────────────
+// DRUM BUFFERS
+// ─────────────────────────────────────────────────────────────────────────────
 
-// ---- Attach PLAY button ----
-document.getElementById("playBtn").addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    // Resume context if needed (without waiting)
-    const ctx = getAudioContext();
-    if (ctx.state === "suspended") ctx.resume();
-    // Toggle play/stop
-    playing ? stop() : start();
-});
+function createDrumBuffers() {
 
-// ---- Passive resume on any pointerdown (backup) ----
-document.addEventListener("pointerdown", () => {
-    if (audioCtx && audioCtx.state === "suspended") {
-        audioCtx.resume().then(() => console.log("🔊 Resumed via passive pointerdown"));
+    const ctx = audioCtx;
+    const sr = ctx.sampleRate;
+
+    // KICK
+    const kickLength =
+        Math.floor(sr * 0.4);
+
+    const kick =
+        ctx.createBuffer(
+            1,
+            kickLength,
+            sr
+        );
+
+    const kd =
+        kick.getChannelData(0);
+
+    for (let i = 0; i < kickLength; i++) {
+
+        const t = i / sr;
+
+        const envelope =
+            Math.exp(-t * 12);
+
+        const frequency =
+            80 +
+            120 *
+            Math.exp(-t * 22);
+
+        const click =
+            Math.exp(-t * 80) *
+            0.15;
+
+        kd[i] =
+            Math.sin(
+                2 *
+                Math.PI *
+                frequency *
+                t
+            ) *
+            envelope *
+            0.8 +
+            click;
     }
-});
+
+    // SNARE
+    const snareLength =
+        Math.floor(sr * 0.25);
+
+    const snare =
+        ctx.createBuffer(
+            1,
+            snareLength,
+            sr
+        );
+
+    const sd =
+        snare.getChannelData(0);
+
+    for (let i = 0; i < snareLength; i++) {
+
+        const t = i / sr;
+
+        const envelope =
+            Math.exp(-t * 18);
+
+        const noise =
+            (Math.random() * 2 - 1) *
+            envelope *
+            0.7;
+
+        const tone =
+            Math.sin(
+                2 *
+                Math.PI *
+                180 *
+                t
+            ) *
+            Math.exp(-t * 15) *
+            0.4;
+
+        sd[i] =
+            noise +
+            tone;
+    }
+
+    // LOW TOM
+    const tomLength =
+        Math.floor(sr * 0.3);
+
+    const lowTom =
+        ctx.createBuffer(
+            1,
+            tomLength,
+            sr
+        );
+
+    const ld =
+        lowTom.getChannelData(0);
+
+    for (let i = 0; i < tomLength; i++) {
+
+        const t = i / sr;
+
+        ld[i] =
+            Math.sin(
+                2 *
+                Math.PI *
+                120 *
+                t
+            ) *
+            Math.exp(-t * 8) *
+            0.9;
+    }
+
+    // MID TOM
+    const midTom =
+        ctx.createBuffer(
+            1,
+            tomLength,
+            sr
+        );
+
+    const md =
+        midTom.getChannelData(0);
+
+    for (let i = 0; i < tomLength; i++) {
+
+        const t = i / sr;
+
+        md[i] =
+            Math.sin(
+                2 *
+                Math.PI *
+                180 *
+                t
+            ) *
+            Math.exp(-t * 8) *
+            0.9;
+    }
+
+    return [
+        kick,
+        snare,
+        lowTom,
+        midTom
+    ];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PLAY DRUM
+// ─────────────────────────────────────────────────────────────────────────────
+
+function playSound(row) {
+
+    if (!audioCtx) {
+        console.warn("AudioContext not initialized.");
+        return;
+    }
+
+    if (!masterGain) {
+        console.warn("Master gain unavailable.");
+        return;
+    }
+
+    if (!drumBuffers[row]) {
+        console.warn(
+            "No drum buffer:",
+            row
+        );
+        return;
+    }
+
+    // IMPORTANT:
+    // Don't await anything here.
+    // This function should play immediately.
+    if (audioCtx.state !== "running") {
+
+        console.warn(
+            "AudioContext not running:",
+            audioCtx.state
+        );
+
+        return;
+    }
+
+    try {
+
+        const source =
+            audioCtx.createBufferSource();
+
+        const gain =
+            audioCtx.createGain();
+
+        source.buffer =
+            drumBuffers[row];
+
+        gain.gain.setValueAtTime(
+            0.9,
+            audioCtx.currentTime
+        );
+
+        source.connect(gain);
+        gain.connect(masterGain);
+
+        source.start(
+            audioCtx.currentTime
+        );
+
+        console.log(
+            "🥁 PLAY:",
+            labels[row][0]
+        );
+
+    } catch (error) {
+
+        console.error(
+            "❌ Drum playback error:",
+            error
+        );
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEST BUTTON
+// ─────────────────────────────────────────────────────────────────────────────
+
+document
+    .getElementById("testBtn")
+    .addEventListener(
+        "pointerdown",
+        function(e) {
+
+            e.preventDefault();
+
+            // Unlock FIRST.
+            unlockAudio();
+
+            // Then attempt the kick immediately.
+            // No await.
+            setTimeout(() => {
+
+                if (
+                    audioCtx &&
+                    audioCtx.state === "running"
+                ) {
+                    playSound(0);
+
+                    document.getElementById("status").textContent =
+                        "🔊 AUDIO TEST — KICK";
+
+                } else {
+
+                    document.getElementById("status").textContent =
+                        "⚠️ AUDIO BLOCKED — TAP TEST AGAIN";
+                }
+
+            }, 30);
+        }
+    );
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REMOVE THE GLOBAL PASSIVE AUDIO RESUME
+// DO NOT USE:
+// document.addEventListener("pointerdown", ...)
+// ─────────────────────────────────────────────────────────────────────────────
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  REST OF APPLICATION (grid, sequencer, patterns, etc.)
 // ─────────────────────────────────────────────────────────────────────────────
-
-const ROWS = 4, STEPS = 16;
-const labels = [ ["KICK","🥁"], ["SNARE","◈"], ["LOW TOM","●"], ["MID TOM","◆"] ];
 
 let pattern = Array.from({ length: ROWS }, () => Array(STEPS).fill(false));
 let patterns = [null, null, null, null];
@@ -460,15 +739,23 @@ function buildGrid() {
             pad.dataset.step = step;
             if (pattern[row][step]) pad.classList.add("on");
 
-            pad.addEventListener("pointerdown", (e) => {
+            pad.addEventListener("pointerdown", function(e) {
                 e.preventDefault();
+                // This is the actual iOS user gesture.
+                unlockAudio();
+
                 // Toggle pattern
                 pattern[row][step] = !pattern[row][step];
                 pad.classList.toggle("on", pattern[row][step]);
                 saveToURL();
                 status.textContent = "● BEAT UPDATED — KEEP COOKING";
-                // Preview sound if pad is ON (no await)
-                if (pattern[row][step]) {
+
+                // Preview immediately if turned ON and audio is running.
+                if (
+                    pattern[row][step] &&
+                    audioCtx &&
+                    audioCtx.state === "running"
+                ) {
                     playSound(row);
                 }
             });
@@ -514,7 +801,7 @@ function schedule() {
 
 function start() {
     if (playing) return;
-    // Context already resumed via PLAY button handler
+    // Audio already unlocked via PLAY button.
     playing = true;
     playBtn.textContent = "■ STOP";
     playBtn.style.background = "#ff3030";
@@ -540,6 +827,24 @@ function stop() {
     currentStep = 0;
     updatePlayhead();
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PLAY BUTTON — SINGLE HANDLER
+// ─────────────────────────────────────────────────────────────────────────────
+
+playBtn.addEventListener("pointerdown", function(e) {
+    e.preventDefault();
+    if (playing) {
+        stop();
+        return;
+    }
+    // Unlock audio before starting.
+    unlockAudio();
+    // Small delay to let the context resume and the silent oscillator play.
+    setTimeout(() => {
+        start();
+    }, 30);
+});
 
 bpmSlider.oninput = () => {
     bpm = Number(bpmSlider.value);
