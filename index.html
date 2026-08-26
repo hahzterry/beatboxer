@@ -114,6 +114,7 @@
             background: #111112; color: #aaa; border-radius: 10px;
             cursor: pointer; font-weight: 800; font-size: 10px; transition: .2s;
             user-select: none;
+            touch-action: manipulation; /* improve iOS responsiveness */
         }
         .tool:hover { color: #fff; border-color: #444; transform: translateY(-1px); }
         .play {
@@ -153,6 +154,7 @@
             border: 1px solid #19191a; background: #101011;
             cursor: pointer; transition: transform .08s, background .1s, box-shadow .1s;
             user-select: none;
+            touch-action: manipulation;
         }
         .pad:hover { background: #181819; transform: translateY(-1px); }
         .pad.on {
@@ -185,6 +187,7 @@
             border: 1px solid var(--line); background: #0d0d0e; color: #aaa;
             padding: 10px 15px; border-radius: 10px; cursor: pointer;
             font-size: 10px; font-weight: 900; letter-spacing: .5px; user-select: none;
+            touch-action: manipulation;
         }
         .action:hover { color: #fff; border-color: #444; }
         .share { background: var(--lime); color: #000; border-color: var(--lime); }
@@ -197,6 +200,7 @@
             border: 1px solid var(--line); background: #0a0a0b; border-radius: 12px;
             padding: 12px; cursor: pointer; color: #555; font-size: 9px; font-weight: 900;
             user-select: none;
+            touch-action: manipulation;
         }
         .slot.active { border-color: var(--lime); color: var(--lime); box-shadow: inset 0 0 20px rgba(200,255,0,.03); }
         .status {
@@ -307,29 +311,31 @@
         </div>
     </section>
     <div class="status">
-        <span id="status">● READY — TAP A PAD TO START COOKING</span>
+        <span id="status">● READY — TAP A PAD OR TEST</span>
         <span>BEAT.HAHZ.LIVE</span>
     </div>
 </div>
 
 <script>
 // ─────────────────────────────────────────────────────────────────────────────
-//  iOS-FIRST AUDIO ENGINE – NO PAGE‑LOAD CONTEXT, LAZY RESUME
+//  ULTIMATE iOS AUDIO ENGINE – pointerdown + lazy resume
 // ─────────────────────────────────────────────────────────────────────────────
 
-// -------- Lazy AudioContext ----------
-let audioCtx = null;  // created only on first interaction
+// ---- Lazy AudioContext ----
+let audioCtx = null;
+let drumBuffers = [];
 
+// ---- Get or create context ----
 function getAudioContext() {
     if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        console.log(`🔊 AudioContext created, state: ${audioCtx.state}`);
+        console.log(`🔊 Created AudioContext, state: ${audioCtx.state}`);
     }
     return audioCtx;
 }
 
-// -------- Resume + ensure running ----------
-async function ensureAudio() {
+// ---- Ensure the context is running (must be called inside a user gesture) ----
+async function ensureAudioRunning() {
     const ctx = getAudioContext();
     if (ctx.state === "suspended") {
         try {
@@ -344,64 +350,59 @@ async function ensureAudio() {
     return ctx.state === "running";
 }
 
-// -------- Generate drum buffers (immediate) ----------
-function createKick(ctx) {
+// ---- Generate drum sounds (using the current context) ----
+function generateBuffers(ctx) {
     const sr = ctx.sampleRate;
-    const len = sr * 0.4;
-    const buf = ctx.createBuffer(1, len, sr);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < len; i++) {
+    // Kick
+    const kickLen = sr * 0.4;
+    const kickBuf = ctx.createBuffer(1, kickLen, sr);
+    const kd = kickBuf.getChannelData(0);
+    for (let i = 0; i < kickLen; i++) {
         const t = i / sr;
         const env = Math.exp(-t * 12);
         const freq = 80 + 120 * Math.exp(-t * 22);
         const click = Math.exp(-t * 80) * 0.15;
-        d[i] = (Math.sin(2 * Math.PI * freq * t) * env * 0.8) + click;
+        kd[i] = (Math.sin(2 * Math.PI * freq * t) * env * 0.8) + click;
     }
-    return buf;
-}
-function createSnare(ctx) {
-    const sr = ctx.sampleRate;
-    const len = sr * 0.25;
-    const buf = ctx.createBuffer(1, len, sr);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < len; i++) {
+    // Snare
+    const snareLen = sr * 0.25;
+    const snareBuf = ctx.createBuffer(1, snareLen, sr);
+    const sd = snareBuf.getChannelData(0);
+    for (let i = 0; i < snareLen; i++) {
         const t = i / sr;
         const env = Math.exp(-t * 18);
         const noise = (Math.random() * 2 - 1) * env * 0.7;
         const tone = Math.sin(2 * Math.PI * 180 * t) * Math.exp(-t * 15) * 0.4;
-        d[i] = noise + tone;
+        sd[i] = noise + tone;
     }
-    return buf;
-}
-function createTom(ctx, freq) {
-    const sr = ctx.sampleRate;
-    const len = sr * 0.3;
-    const buf = ctx.createBuffer(1, len, sr);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < len; i++) {
+    // Low Tom
+    const tomLen = sr * 0.3;
+    const lowTom = ctx.createBuffer(1, tomLen, sr);
+    const ld = lowTom.getChannelData(0);
+    for (let i = 0; i < tomLen; i++) {
         const t = i / sr;
-        d[i] = Math.sin(2 * Math.PI * freq * t) * Math.exp(-t * 8) * 0.9;
+        ld[i] = Math.sin(2 * Math.PI * 120 * t) * Math.exp(-t * 8) * 0.9;
     }
-    return buf;
+    // Mid Tom
+    const midTom = ctx.createBuffer(1, tomLen, sr);
+    const md = midTom.getChannelData(0);
+    for (let i = 0; i < tomLen; i++) {
+        const t = i / sr;
+        md[i] = Math.sin(2 * Math.PI * 180 * t) * Math.exp(-t * 8) * 0.9;
+    }
+    return [kickBuf, snareBuf, lowTom, midTom];
 }
 
-let drumBuffers = []; // will be populated after first context creation
-
-// -------- Play a sound (called from events) ----------
+// ---- Play a drum sound (row 0..3) ----
 async function playSound(row) {
     const ctx = getAudioContext();
-    // Ensure we have buffers (populate on first run)
+    // If buffers not ready, generate them now
     if (drumBuffers.length === 0) {
-        drumBuffers = [
-            createKick(ctx),
-            createSnare(ctx),
-            createTom(ctx, 120),
-            createTom(ctx, 180)
-        ];
+        drumBuffers = generateBuffers(ctx);
         console.log("🎵 Drum buffers generated");
     }
-    // Resume and wait
-    const ok = await ensureAudio();
+    // Ensure audio is running
+    const ok = await ensureAudioRunning();
     if (!ok) {
         console.warn("⛔ Cannot play – context not running");
         return;
@@ -420,21 +421,33 @@ async function playSound(row) {
     }
 }
 
-// -------- TEST button ----------
-document.getElementById("testBtn").addEventListener("click", async () => {
-    await playSound(0); // kick
+// ---- Attach audio to pointerdown events ----
+// Test button
+document.getElementById("testBtn").addEventListener("pointerdown", async (e) => {
+    e.preventDefault(); // prevent double-firing on iOS
+    await playSound(0);
 });
 
-// -------- Also resume on any click/tap (passive) ----------
-// This is a backup – the real resume happens inside playSound.
-document.addEventListener("click", () => {
+// ---- Pad click handler (to be attached later) ----
+// We'll attach a single event listener using event delegation on the grid
+// so that every pad works with pointerdown.
+
+// ---- Also attach to PLAY button to ensure context resumes ----
+document.getElementById("playBtn").addEventListener("pointerdown", async (e) => {
+    // Just ensure audio is running – the start() function will also call ensureAudioRunning
+    await ensureAudioRunning();
+});
+
+// ---- Passive resume on any pointerdown (just in case) ----
+// Not strictly needed, but helps if user taps elsewhere.
+document.addEventListener("pointerdown", () => {
     if (audioCtx && audioCtx.state === "suspended") {
-        audioCtx.resume().then(() => console.log("🔊 Resumed via passive listener"));
+        audioCtx.resume().then(() => console.log("🔊 Resumed via passive pointerdown"));
     }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  REST OF THE APPLICATION – unchanged, but uses playSound() above
+//  REST OF APPLICATION (grid, sequencer, patterns, etc.)
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ROWS = 4, STEPS = 16;
@@ -468,14 +481,22 @@ function buildGrid() {
             pad.dataset.row = row;
             pad.dataset.step = step;
             if (pattern[row][step]) pad.classList.add("on");
-            pad.addEventListener("click", async () => {
-                // Toggle pattern and also ensure audio context is ready (for future playback)
-                await ensureAudio(); // just to warm up
+
+            // Use pointerdown for immediate response and audio activation
+            pad.addEventListener("pointerdown", async (e) => {
+                e.preventDefault(); // prevent context menu on iOS
+                // Toggle the pattern
                 pattern[row][step] = !pattern[row][step];
                 pad.classList.toggle("on", pattern[row][step]);
                 saveToURL();
                 status.textContent = "● BEAT UPDATED — KEEP COOKING";
+
+                // Preview the sound immediately (if pad is ON)
+                if (pattern[row][step]) {
+                    await playSound(row);
+                }
             });
+
             rowDiv.appendChild(pad);
         }
         grid.appendChild(rowDiv);
@@ -500,7 +521,7 @@ function step() {
         p.classList.add("playing");
         const row = Number(p.dataset.row);
         if (pattern[row][currentStep]) {
-            playSound(row); // async, but we don't wait – fire and forget
+            playSound(row); // fire and forget – will resume if needed
         }
     });
     updatePlayhead();
@@ -517,8 +538,7 @@ function schedule() {
 
 async function start() {
     if (playing) return;
-    // Ensure audio is running before starting the loop
-    const ok = await ensureAudio();
+    const ok = await ensureAudioRunning();
     if (!ok) {
         status.textContent = "⚠️ CANNOT START – AUDIO CONTEXT NOT RUNNING";
         return;
@@ -544,12 +564,12 @@ function stop() {
     playBtn.style.borderColor = "";
     playBtn.style.color = "";
     grid.classList.remove("playing-grid");
-    status.textContent = "● READY — TAP A PAD TO START COOKING";
+    status.textContent = "● READY — TAP A PAD OR TEST";
     currentStep = 0;
     updatePlayhead();
 }
 
-playBtn.onclick = () => playing ? stop() : start();
+playBtn.addEventListener("pointerdown", () => playing ? stop() : start());
 
 bpmSlider.oninput = () => {
     bpm = Number(bpmSlider.value);
@@ -561,16 +581,14 @@ swingSlider.oninput = () => {
     if (playing) { clearTimeout(timer); schedule(); }
 };
 
-// ... (rest of actions, genres, patterns, URL encoding etc. are unchanged)
-// I'll keep them for completeness – they don't affect audio.
-
-document.getElementById("clearBtn").onclick = () => {
+// ---- Actions (same as before) ----
+document.getElementById("clearBtn").addEventListener("pointerdown", () => {
     pattern = Array.from({ length: ROWS }, () => Array(STEPS).fill(false));
     buildGrid();
     saveToURL();
     status.textContent = "● GRID CLEARED — START FRESH";
-};
-document.getElementById("randomBtn").onclick = () => {
+});
+document.getElementById("randomBtn").addEventListener("pointerdown", () => {
     for (let r=0; r<ROWS; r++)
         for (let s=0; s<STEPS; s++) {
             const prob = r===0 ? .45 : r===1 ? .28 : r===2 ? .20 : .25;
@@ -579,30 +597,30 @@ document.getElementById("randomBtn").onclick = () => {
     buildGrid();
     saveToURL();
     status.textContent = "✦ RANDOM BEAT GENERATED";
-};
-document.getElementById("flipBtn").onclick = () => {
+});
+document.getElementById("flipBtn").addEventListener("pointerdown", () => {
     for (let r=0; r<ROWS; r++)
         for (let s=0; s<STEPS; s++)
             if (Math.random() < .28) pattern[r][s] = !pattern[r][s];
     buildGrid();
     saveToURL();
     status.textContent = "✦ AI FLIP — NEW ENERGY UNLOCKED";
-};
-document.getElementById("remixBtn").onclick = () => {
+});
+document.getElementById("remixBtn").addEventListener("pointerdown", () => {
     for (let r=0; r<ROWS; r++)
         pattern[r] = pattern[r].map(v => Math.random() < .2 ? !v : v);
     buildGrid();
     saveToURL();
     status.textContent = "↻ REMIXED — SAME DNA, NEW BEAT";
-};
+});
 
 // Genres
 document.querySelectorAll(".genre").forEach(btn => {
-    btn.onclick = () => {
+    btn.addEventListener("pointerdown", () => {
         document.querySelectorAll(".genre").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         applyGenre(btn.dataset.genre);
-    };
+    });
 });
 function clearPattern() { pattern = Array.from({ length: ROWS }, () => Array(STEPS).fill(false)); }
 function applyGenre(genre) {
@@ -624,7 +642,7 @@ function applyGenre(genre) {
 
 // Pattern slots
 document.querySelectorAll(".slot").forEach(slot => {
-    slot.onclick = () => {
+    slot.addEventListener("pointerdown", () => {
         const i = Number(slot.dataset.slot);
         document.querySelectorAll(".slot").forEach(s => s.classList.remove("active"));
         slot.classList.add("active");
@@ -636,14 +654,14 @@ document.querySelectorAll(".slot").forEach(slot => {
             patterns[i] = JSON.parse(JSON.stringify(pattern));
             status.textContent = `PATTERN ${i+1} SAVED`;
         }
-    };
+    });
 });
-document.getElementById("saveBtn").onclick = () => {
+document.getElementById("saveBtn").addEventListener("pointerdown", () => {
     const active = document.querySelector(".slot.active");
     const i = Number(active.dataset.slot);
     patterns[i] = JSON.parse(JSON.stringify(pattern));
     status.textContent = `✓ ${active.textContent} SAVED`;
-};
+});
 
 // URL sharing
 function encodePattern() {
@@ -664,7 +682,7 @@ function decodePattern(code) {
     } catch(_) {}
 }
 function saveToURL() { history.replaceState(null, "", "#" + encodePattern()); }
-document.getElementById("shareBtn").onclick = async () => {
+document.getElementById("shareBtn").addEventListener("pointerdown", async () => {
     saveToURL();
     const url = location.href;
     try {
@@ -674,14 +692,14 @@ document.getElementById("shareBtn").onclick = async () => {
     } catch(_) {
         prompt("Copy your beat link:", url);
     }
-};
+});
 if (location.hash) decodePattern(location.hash.substring(1));
 
 document.addEventListener("keydown", e => {
     if (e.code === "Space") { e.preventDefault(); playing ? stop() : start(); }
 });
 
-console.log("✅ BEAT.HAHZ.LIVE loaded — tap TEST to hear audio.");
+console.log("✅ BEAT.HAHZ.LIVE ready – tap TEST or any pad to hear audio.");
 </script>
 </body>
 </html>
