@@ -3,13 +3,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-    <title>BEAT.HAHZ.LIVE — The Beat Machine</title>
+    <title>BEAT.HAHZ.LIVE</title>
     <style>
-        /* (styles are the same – keep as before) */
+        /* ── reset & base ── */
         :root {
             --bg: #050505;
             --panel: #0b0b0c;
-            --line: rgba(255,255,255,.09);
+            --line: rgba(255, 255, 255, .09);
             --text: #f5f5f5;
             --muted: #777;
             --lime: #c8ff00;
@@ -314,20 +314,41 @@
 
 <script>
 // ─────────────────────────────────────────────────────────────────────────────
-//  DEBUGGABLE AUDIO ENGINE – WITH TEST TONE
+//  iOS-FIRST AUDIO ENGINE – NO PAGE‑LOAD CONTEXT, LAZY RESUME
 // ─────────────────────────────────────────────────────────────────────────────
 
-const ROWS = 4, STEPS = 16;
-const labels = [ ["KICK","🥁"], ["SNARE","◈"], ["LOW TOM","●"], ["MID TOM","◆"] ];
+// -------- Lazy AudioContext ----------
+let audioCtx = null;  // created only on first interaction
 
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-console.log(`🔊 AudioContext initial state: ${audioCtx.state}`);
+function getAudioContext() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        console.log(`🔊 AudioContext created, state: ${audioCtx.state}`);
+    }
+    return audioCtx;
+}
 
-// ---- Generate drum sounds ----
-function createKick() {
-    const sr = audioCtx.sampleRate;
+// -------- Resume + ensure running ----------
+async function ensureAudio() {
+    const ctx = getAudioContext();
+    if (ctx.state === "suspended") {
+        try {
+            await ctx.resume();
+            console.log(`✅ AudioContext resumed, state: ${ctx.state}`);
+            document.getElementById("status").textContent = "● AUDIO READY — PLAY AWAY";
+        } catch (e) {
+            console.warn("❌ Resume failed:", e);
+            document.getElementById("status").textContent = "⚠️ AUDIO RESUME FAILED";
+        }
+    }
+    return ctx.state === "running";
+}
+
+// -------- Generate drum buffers (immediate) ----------
+function createKick(ctx) {
+    const sr = ctx.sampleRate;
     const len = sr * 0.4;
-    const buf = audioCtx.createBuffer(1, len, sr);
+    const buf = ctx.createBuffer(1, len, sr);
     const d = buf.getChannelData(0);
     for (let i = 0; i < len; i++) {
         const t = i / sr;
@@ -338,10 +359,10 @@ function createKick() {
     }
     return buf;
 }
-function createSnare() {
-    const sr = audioCtx.sampleRate;
+function createSnare(ctx) {
+    const sr = ctx.sampleRate;
     const len = sr * 0.25;
-    const buf = audioCtx.createBuffer(1, len, sr);
+    const buf = ctx.createBuffer(1, len, sr);
     const d = buf.getChannelData(0);
     for (let i = 0; i < len; i++) {
         const t = i / sr;
@@ -352,10 +373,10 @@ function createSnare() {
     }
     return buf;
 }
-function createTom(freq) {
-    const sr = audioCtx.sampleRate;
+function createTom(ctx, freq) {
+    const sr = ctx.sampleRate;
     const len = sr * 0.3;
-    const buf = audioCtx.createBuffer(1, len, sr);
+    const buf = ctx.createBuffer(1, len, sr);
     const d = buf.getChannelData(0);
     for (let i = 0; i < len; i++) {
         const t = i / sr;
@@ -364,83 +385,60 @@ function createTom(freq) {
     return buf;
 }
 
-const buffers = [ createKick(), createSnare(), createTom(120), createTom(180) ];
+let drumBuffers = []; // will be populated after first context creation
 
-// ---- Resume helper with logging ----
-async function resumeAudio() {
-    if (audioCtx.state === "suspended") {
-        try {
-            await audioCtx.resume();
-            console.log(`✅ AudioContext resumed, state: ${audioCtx.state}`);
-            document.getElementById("status").textContent = "● AUDIO READY — PLAY AWAY";
-        } catch (e) {
-            console.warn("❌ Resume failed:", e);
-            document.getElementById("status").textContent = "⚠️ AUDIO RESUME FAILED – CHECK CONSOLE";
-        }
-    } else {
-        console.log(`ℹ️ AudioContext already ${audioCtx.state}`);
+// -------- Play a sound (called from events) ----------
+async function playSound(row) {
+    const ctx = getAudioContext();
+    // Ensure we have buffers (populate on first run)
+    if (drumBuffers.length === 0) {
+        drumBuffers = [
+            createKick(ctx),
+            createSnare(ctx),
+            createTom(ctx, 120),
+            createTom(ctx, 180)
+        ];
+        console.log("🎵 Drum buffers generated");
     }
-    return audioCtx.state === "running";
-}
-
-// ---- Play a single sound (for testing) ----
-function playSound(row) {
-    if (!buffers[row]) {
-        console.warn(`No buffer for row ${row}`);
+    // Resume and wait
+    const ok = await ensureAudio();
+    if (!ok) {
+        console.warn("⛔ Cannot play – context not running");
         return;
     }
     try {
-        const src = audioCtx.createBufferSource();
-        src.buffer = buffers[row];
-        const gain = audioCtx.createGain();
-        gain.gain.value = 1.0;  // full volume for testing
+        const src = ctx.createBufferSource();
+        src.buffer = drumBuffers[row];
+        const gain = ctx.createGain();
+        gain.gain.value = 0.9;
         src.connect(gain);
-        gain.connect(audioCtx.destination);
+        gain.connect(ctx.destination);
         src.start();
-        console.log(`🔊 Playing row ${row} (${labels[row][0]})`);
+        console.log(`🔊 Playing row ${row}`);
     } catch (e) {
-        console.warn("❌ Playback error:", e);
+        console.warn("Playback error:", e);
     }
 }
 
-// ---- Test button ----
+// -------- TEST button ----------
 document.getElementById("testBtn").addEventListener("click", async () => {
-    await resumeAudio();
-    playSound(0); // kick
+    await playSound(0); // kick
 });
 
-// ---- Resume on any click/touch ----
-document.addEventListener("click", resumeAudio);
-document.addEventListener("touchstart", resumeAudio);
-
-// ---- (Optional) Play a test tone on first click ----
-let firstInteraction = true;
+// -------- Also resume on any click/tap (passive) ----------
+// This is a backup – the real resume happens inside playSound.
 document.addEventListener("click", () => {
-    if (firstInteraction) {
-        firstInteraction = false;
-        // try to play a soft beep to confirm audio works
-        resumeAudio().then(ok => {
-            if (ok) {
-                // play a quick sine wave as a "hello"
-                try {
-                    const osc = audioCtx.createOscillator();
-                    const g = audioCtx.createGain();
-                    g.gain.value = 0.2;
-                    osc.connect(g);
-                    g.connect(audioCtx.destination);
-                    osc.frequency.value = 880;
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.1);
-                    console.log("🔔 Test beep played");
-                } catch(e) { console.warn("Beep failed:", e); }
-            }
-        });
+    if (audioCtx && audioCtx.state === "suspended") {
+        audioCtx.resume().then(() => console.log("🔊 Resumed via passive listener"));
     }
-}, { once: true });
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  REST OF APPLICATION (pattern, grid, sequencer)
+//  REST OF THE APPLICATION – unchanged, but uses playSound() above
 // ─────────────────────────────────────────────────────────────────────────────
+
+const ROWS = 4, STEPS = 16;
+const labels = [ ["KICK","🥁"], ["SNARE","◈"], ["LOW TOM","●"], ["MID TOM","◆"] ];
 
 let pattern = Array.from({ length: ROWS }, () => Array(STEPS).fill(false));
 let patterns = [null, null, null, null];
@@ -470,8 +468,9 @@ function buildGrid() {
             pad.dataset.row = row;
             pad.dataset.step = step;
             if (pattern[row][step]) pad.classList.add("on");
-            pad.addEventListener("click", () => {
-                resumeAudio();
+            pad.addEventListener("click", async () => {
+                // Toggle pattern and also ensure audio context is ready (for future playback)
+                await ensureAudio(); // just to warm up
                 pattern[row][step] = !pattern[row][step];
                 pad.classList.toggle("on", pattern[row][step]);
                 saveToURL();
@@ -501,7 +500,7 @@ function step() {
         p.classList.add("playing");
         const row = Number(p.dataset.row);
         if (pattern[row][currentStep]) {
-            playSound(row);
+            playSound(row); // async, but we don't wait – fire and forget
         }
     });
     updatePlayhead();
@@ -516,10 +515,10 @@ function schedule() {
     timer = setTimeout(() => { step(); schedule(); }, delay);
 }
 
-// ---- start() now awaits resume ----
 async function start() {
     if (playing) return;
-    const ok = await resumeAudio();
+    // Ensure audio is running before starting the loop
+    const ok = await ensureAudio();
     if (!ok) {
         status.textContent = "⚠️ CANNOT START – AUDIO CONTEXT NOT RUNNING";
         return;
@@ -562,7 +561,9 @@ swingSlider.oninput = () => {
     if (playing) { clearTimeout(timer); schedule(); }
 };
 
-// Actions
+// ... (rest of actions, genres, patterns, URL encoding etc. are unchanged)
+// I'll keep them for completeness – they don't affect audio.
+
 document.getElementById("clearBtn").onclick = () => {
     pattern = Array.from({ length: ROWS }, () => Array(STEPS).fill(false));
     buildGrid();
@@ -680,7 +681,7 @@ document.addEventListener("keydown", e => {
     if (e.code === "Space") { e.preventDefault(); playing ? stop() : start(); }
 });
 
-console.log("✅ BEAT.HAHZ.LIVE loaded – click the TEST button to verify audio.");
+console.log("✅ BEAT.HAHZ.LIVE loaded — tap TEST to hear audio.");
 </script>
 </body>
 </html>
