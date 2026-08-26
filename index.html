@@ -3,9 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+
     <title>BEAT.HAHZ.LIVE</title>
+
     <style>
-        /* ── reset & base ── */
         :root {
             --bg: #050505;
             --panel: #0b0b0c;
@@ -16,25 +17,54 @@
             --pink: #ff2bd6;
             --orange: #ff6a00;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            background: radial-gradient(circle at 50% -10%, rgba(200,255,0,.09), transparent 35%),
-                        radial-gradient(circle at 100% 100%, rgba(255,43,214,.06), transparent 30%),
-                        #050505;
+            background:
+                radial-gradient(
+                    circle at 50% -10%,
+                    rgba(200,255,0,.09),
+                    transparent 35%
+                ),
+                radial-gradient(
+                    circle at 100% 100%,
+                    rgba(255,43,214,.06),
+                    transparent 30%
+                ),
+                #050505;
+
             color: var(--text);
             font-family: Inter, Arial, Helvetica, sans-serif;
             padding: 18px;
             overflow-x: hidden;
         }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        button {
+            -webkit-tap-highlight-color: transparent;
+        }
+
         .machine {
             width: min(1180px, 100%);
             margin: auto;
             background: linear-gradient(145deg, #101011, #080809);
             border: 1px solid var(--line);
             border-radius: 32px;
-            box-shadow: 0 40px 100px rgba(0,0,0,.75), inset 0 1px rgba(255,255,255,.06);
+            box-shadow:
+                0 40px 100px rgba(0,0,0,.75),
+                inset 0 1px rgba(255,255,255,.06);
             overflow: hidden;
         }
+
         .topbar {
             display: flex;
             justify-content: space-between;
@@ -42,284 +72,934 @@
             padding: 22px 26px;
             border-bottom: 1px solid var(--line);
         }
+
         .brand {
             display: flex;
             align-items: center;
             gap: 13px;
         }
+
         .brand-mark {
-            width: 42px; height: 42px; border-radius: 12px;
-            display: grid; place-items: center;
-            background: var(--lime); color: #000;
-            font-weight: 1000; font-size: 21px;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            background: var(--lime);
+            color: #000;
+            font-weight: 1000;
+            font-size: 21px;
             box-shadow: 0 0 30px rgba(200,255,0,.22);
         }
-        .brand-name { font-size: 20px; font-weight: 1000; letter-spacing: -.8px; }
-        .brand-name span { color: var(--lime); }
-        .brand-sub { color: #666; font-size: 9px; letter-spacing: 2px; margin-top: 3px; }
-        .live {
-            display: flex; align-items: center; gap: 8px;
-            border: 1px solid rgba(200,255,0,.2); padding: 8px 13px; border-radius: 999px;
-            font-size: 10px; font-weight: 800; letter-spacing: 1.5px;
-            color: var(--lime); background: rgba(200,255,0,.04);
+
+        .brand-name {
+            font-size: 20px;
+            font-weight: 1000;
+            letter-spacing: -.8px;
         }
+
+        .brand-name span {
+            color: var(--lime);
+        }
+
+        .brand-sub {
+            color: #666;
+            font-size: 9px;
+            letter-spacing: 2px;
+            margin-top: 3px;
+        }
+
+        .live {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(200,255,0,.2);
+            padding: 8px 13px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: var(--lime);
+            background: rgba(200,255,0,.04);
+        }
+
         .live-dot {
-            width: 7px; height: 7px; border-radius: 50%;
-            background: var(--lime); box-shadow: 0 0 15px var(--lime);
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--lime);
+            box-shadow: 0 0 15px var(--lime);
             animation: live 1s infinite;
         }
-        @keyframes live { 50% { opacity: .25; transform: scale(.7); } }
+
+        @keyframes live {
+            50% {
+                opacity: .25;
+                transform: scale(.7);
+            }
+        }
+
         .hero {
             padding: 34px 28px 25px;
-            display: flex; justify-content: space-between; align-items: end; gap: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 25px;
         }
+
         .eyebrow {
-            color: var(--lime); font-size: 10px; font-weight: 900;
-            letter-spacing: 3px; margin-bottom: 10px;
+            color: var(--lime);
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
         }
+
         .hero h1 {
-            font-size: clamp(38px, 6vw, 76px); line-height: .88;
-            letter-spacing: -5px; font-weight: 1000; max-width: 680px;
+            font-size: clamp(38px, 6vw, 76px);
+            line-height: .88;
+            letter-spacing: -5px;
+            font-weight: 1000;
+            max-width: 680px;
         }
-        .hero h1 span { color: var(--lime); }
-        .hero p { color: #777; margin-top: 16px; font-size: 13px; max-width: 520px; }
-        .stats { display: flex; gap: 9px; }
+
+        .hero h1 span {
+            color: var(--lime);
+        }
+
+        .hero p {
+            color: #777;
+            margin-top: 16px;
+            font-size: 13px;
+            max-width: 520px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 9px;
+        }
+
         .stat {
-            min-width: 82px; padding: 13px; background: #0c0c0d;
-            border: 1px solid var(--line); border-radius: 14px; text-align: center;
+            min-width: 82px;
+            padding: 13px;
+            background: #0c0c0d;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            text-align: center;
         }
-        .stat strong { display: block; font-size: 18px; }
-        .stat small { color: #555; font-size: 8px; letter-spacing: 1px; }
+
+        .stat strong {
+            display: block;
+            font-size: 18px;
+        }
+
+        .stat small {
+            color: #555;
+            font-size: 8px;
+            letter-spacing: 1px;
+        }
+
         .genres {
-            display: flex; gap: 8px; padding: 0 28px 22px; overflow-x: auto;
+            display: flex;
+            gap: 8px;
+            padding: 0 28px 22px;
+            overflow-x: auto;
         }
+
         .genre {
-            flex: 0 0 auto; border: 1px solid var(--line); background: #0b0b0c;
-            color: #888; border-radius: 999px; padding: 9px 15px;
-            font-size: 10px; font-weight: 800; cursor: pointer; transition: .2s;
-            user-select: none;
-        }
-        .genre:hover, .genre.active { color: #000; background: var(--lime); border-color: var(--lime); }
-        .studio {
-            margin: 0 22px 22px; background: #070708;
-            border: 1px solid var(--line); border-radius: 24px; overflow: hidden;
-        }
-        .toolbar {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 13px; border-bottom: 1px solid var(--line); gap: 10px; flex-wrap: wrap;
-        }
-        .transport { display: flex; gap: 7px; }
-        .tool {
-            height: 38px; padding: 0 14px; border: 1px solid var(--line);
-            background: #111112; color: #aaa; border-radius: 10px;
-            cursor: pointer; font-weight: 800; font-size: 10px; transition: .2s;
+            flex: 0 0 auto;
+            border: 1px solid var(--line);
+            background: #0b0b0c;
+            color: #888;
+            border-radius: 999px;
+            padding: 9px 15px;
+            font-size: 10px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: .2s;
             user-select: none;
             touch-action: manipulation;
         }
-        .tool:hover { color: #fff; border-color: #444; transform: translateY(-1px); }
-        .play {
-            background: var(--lime); color: #000; border-color: var(--lime); min-width: 82px;
+
+        .genre:hover,
+        .genre.active {
+            color: #000;
+            background: var(--lime);
+            border-color: var(--lime);
         }
+
+        .studio {
+            margin: 0 22px 22px;
+            background: #070708;
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            overflow: hidden;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 13px;
+            border-bottom: 1px solid var(--line);
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .transport {
+            display: flex;
+            gap: 7px;
+        }
+
+        .tool {
+            height: 38px;
+            padding: 0 14px;
+            border: 1px solid var(--line);
+            background: #111112;
+            color: #aaa;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 10px;
+            transition: .2s;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .tool:hover {
+            color: #fff;
+            border-color: #444;
+            transform: translateY(-1px);
+        }
+
+        .play {
+            background: var(--lime);
+            color: #000;
+            border-color: var(--lime);
+            min-width: 82px;
+        }
+
         .magic {
             background: linear-gradient(135deg, #ff2bd6, #ff6a00);
-            color: #fff; border: 0; box-shadow: 0 0 25px rgba(255,43,214,.15);
+            color: #fff;
+            border: 0;
+            box-shadow: 0 0 25px rgba(255,43,214,.15);
         }
-        .controls { display: flex; align-items: center; gap: 14px; }
-        .control {
-            display: flex; align-items: center; gap: 8px;
-            color: #666; font-size: 9px; font-weight: 800; letter-spacing: 1px;
-        }
-        input[type="range"] { width: 100px; accent-color: var(--lime); cursor: pointer; }
-        .bpm { color: #fff; font-size: 17px; min-width: 45px; text-align: right; font-weight: 900; }
-        .grid-container { position: relative; overflow-x: auto; padding: 16px; }
-        .grid { min-width: 760px; position: relative; }
-        .step-numbers {
-            display: grid; grid-template-columns: 90px repeat(16,1fr); gap: 5px; margin-bottom: 7px;
-        }
-        .step-number { color: #444; font-size: 8px; text-align: center; font-weight: 800; }
-        .step-number.accent { color: #888; }
-        .row {
-            display: grid; grid-template-columns: 90px repeat(16,1fr); gap: 5px; margin-bottom: 5px;
-        }
-        .row-label {
-            display: flex; align-items: center; gap: 8px;
-            color: #777; font-size: 10px; font-weight: 900; letter-spacing: 1px;
-        }
-        .sound-icon {
-            width: 25px; height: 25px; display: grid; place-items: center;
-            border: 1px solid #292929; border-radius: 7px; font-size: 11px; color: #aaa;
-        }
-        .pad {
-            position: relative; aspect-ratio: 1; border-radius: 8px;
-            border: 1px solid #19191a; background: #101011;
-            cursor: pointer; transition: transform .08s, background .1s, box-shadow .1s;
-            user-select: none;
-            touch-action: manipulation;
-        }
-        .pad:hover { background: #181819; transform: translateY(-1px); }
-        .pad.on {
-            background: radial-gradient(circle at 30% 25%, #efffa8, #c8ff00 45%, #7aa500);
-            border-color: var(--lime);
-            box-shadow: 0 0 18px rgba(200,255,0,.28), inset 0 1px rgba(255,255,255,.6);
-        }
-        .pad.on::after {
-            content: ""; position: absolute; inset: 4px;
-            border-radius: 5px; border: 1px solid rgba(0,0,0,.15);
-        }
-        .pad.playing {
-            transform: scale(1.09); z-index: 3;
-            box-shadow: 0 0 0 2px #fff, 0 0 30px rgba(200,255,0,.7);
-        }
-        .pad.playing.on { background: #eaff85; }
-        .playhead {
-            position: absolute; top: 0; bottom: 0; width: 2px;
-            background: var(--lime); box-shadow: 0 0 18px var(--lime);
-            opacity: 0; pointer-events: none; transition: left .06s linear; z-index: 5;
-        }
-        .playing-grid .playhead { opacity: .65; }
-        .bottom {
-            padding: 16px; border-top: 1px solid var(--line);
-            display: flex; justify-content: space-between; align-items: center;
-            gap: 12px; flex-wrap: wrap;
-        }
-        .bottom-left, .bottom-right { display: flex; gap: 8px; flex-wrap: wrap; }
-        .action {
-            border: 1px solid var(--line); background: #0d0d0e; color: #aaa;
-            padding: 10px 15px; border-radius: 10px; cursor: pointer;
-            font-size: 10px; font-weight: 900; letter-spacing: .5px; user-select: none;
-            touch-action: manipulation;
-        }
-        .action:hover { color: #fff; border-color: #444; }
-        .share { background: var(--lime); color: #000; border-color: var(--lime); }
-        .patterns { padding: 0 22px 22px; }
-        .pattern-title { color: #555; font-size: 9px; font-weight: 900; letter-spacing: 2px; margin-bottom: 9px; }
-        .slots {
-            display: grid; grid-template-columns: repeat(4,1fr); gap: 8px;
-        }
-        .slot {
-            border: 1px solid var(--line); background: #0a0a0b; border-radius: 12px;
-            padding: 12px; cursor: pointer; color: #555; font-size: 9px; font-weight: 900;
-            user-select: none;
-            touch-action: manipulation;
-        }
-        .slot.active { border-color: var(--lime); color: var(--lime); box-shadow: inset 0 0 20px rgba(200,255,0,.03); }
-        .status {
-            padding: 0 28px 25px; color: #444; font-size: 9px;
-            display: flex; justify-content: space-between; letter-spacing: 1px;
-        }
-        .status span:first-child { color: #777; }
+
         .test-btn {
             background: #ff6a00;
             color: #fff;
             border: 0;
             padding: 0 18px;
         }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        input[type="range"] {
+            width: 100px;
+            accent-color: var(--lime);
+            cursor: pointer;
+        }
+
+        .bpm {
+            color: #fff;
+            font-size: 17px;
+            min-width: 45px;
+            text-align: right;
+            font-weight: 900;
+        }
+
+        .grid-container {
+            position: relative;
+            overflow-x: auto;
+            padding: 16px;
+        }
+
+        .grid {
+            min-width: 760px;
+            position: relative;
+        }
+
+        .step-numbers {
+            display: grid;
+            grid-template-columns: 90px repeat(16,1fr);
+            gap: 5px;
+            margin-bottom: 7px;
+        }
+
+        .step-number {
+            color: #444;
+            font-size: 8px;
+            text-align: center;
+            font-weight: 800;
+        }
+
+        .step-number.accent {
+            color: #888;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 90px repeat(16,1fr);
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+
+        .row-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #777;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+
+        .sound-icon {
+            width: 25px;
+            height: 25px;
+            display: grid;
+            place-items: center;
+            border: 1px solid #292929;
+            border-radius: 7px;
+            font-size: 11px;
+            color: #aaa;
+        }
+
+        .pad {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            border: 1px solid #19191a;
+            background: #101011;
+            cursor: pointer;
+            transition:
+                transform .08s,
+                background .1s,
+                box-shadow .1s;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .pad:hover {
+            background: #181819;
+            transform: translateY(-1px);
+        }
+
+        .pad.on {
+            background:
+                radial-gradient(
+                    circle at 30% 25%,
+                    #efffa8,
+                    #c8ff00 45%,
+                    #7aa500
+                );
+            border-color: var(--lime);
+            box-shadow:
+                0 0 18px rgba(200,255,0,.28),
+                inset 0 1px rgba(255,255,255,.6);
+        }
+
+        .pad.on::after {
+            content: "";
+            position: absolute;
+            inset: 4px;
+            border-radius: 5px;
+            border: 1px solid rgba(0,0,0,.15);
+        }
+
+        .pad.playing {
+            transform: scale(1.09);
+            z-index: 3;
+            box-shadow:
+                0 0 0 2px #fff,
+                0 0 30px rgba(200,255,0,.7);
+        }
+
+        .pad.playing.on {
+            background: #eaff85;
+        }
+
+        .playhead {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--lime);
+            box-shadow: 0 0 18px var(--lime);
+            opacity: 0;
+            pointer-events: none;
+            transition: left .06s linear;
+            z-index: 5;
+        }
+
+        .playing-grid .playhead {
+            opacity: .65;
+        }
+
+        .bottom {
+            padding: 16px;
+            border-top: 1px solid var(--line);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .bottom-left,
+        .bottom-right {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action {
+            border: 1px solid var(--line);
+            background: #0d0d0e;
+            color: #aaa;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: .5px;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .action:hover {
+            color: #fff;
+            border-color: #444;
+        }
+
+        .share {
+            background: var(--lime);
+            color: #000;
+            border-color: var(--lime);
+        }
+
+        .patterns {
+            padding: 0 22px 22px;
+        }
+
+        .pattern-title {
+            color: #555;
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            margin-bottom: 9px;
+        }
+
+        .slots {
+            display: grid;
+            grid-template-columns: repeat(4,1fr);
+            gap: 8px;
+        }
+
+        .slot {
+            border: 1px solid var(--line);
+            background: #0a0a0b;
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            color: #555;
+            font-size: 9px;
+            font-weight: 900;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .slot.active {
+            border-color: var(--lime);
+            color: var(--lime);
+            box-shadow: inset 0 0 20px rgba(200,255,0,.03);
+        }
+
+        .status {
+            padding: 0 28px 25px;
+            color: #444;
+            font-size: 9px;
+            display: flex;
+            justify-content: space-between;
+            letter-spacing: 1px;
+        }
+
+        .status span:first-child {
+            color: #777;
+        }
+
+        #audioState {
+            color: #555;
+        }
+
+        #audioState.ready {
+            color: var(--lime);
+        }
+
+        #audioState.error {
+            color: #ff6a00;
+        }
+
         @media (max-width:700px) {
-            body { padding: 8px; }
-            .machine { border-radius: 22px; }
-            .topbar { padding: 16px; }
-            .brand-mark { width: 35px; height: 35px; }
-            .brand-name { font-size: 16px; }
-            .hero { display: block; padding: 27px 18px 20px; }
-            .hero h1 { letter-spacing: -3px; }
-            .hero p { font-size: 12px; }
-            .stats { margin-top: 20px; }
-            .genres { padding-left: 18px; padding-right: 18px; }
-            .studio { margin: 0 8px 12px; border-radius: 18px; }
-            .toolbar { padding: 10px; }
-            .controls { width: 100%; justify-content: space-between; }
-            input[type="range"] { flex: 1; width: auto; }
-            .grid-container { padding: 10px; }
-            .bottom { padding: 12px; }
-            .status { padding: 0 18px 18px; }
-            .live { padding: 7px 9px; }
+
+            body {
+                padding: 8px;
+            }
+
+            .machine {
+                border-radius: 22px;
+            }
+
+            .topbar {
+                padding: 16px;
+            }
+
+            .brand-mark {
+                width: 35px;
+                height: 35px;
+            }
+
+            .brand-name {
+                font-size: 16px;
+            }
+
+            .hero {
+                display: block;
+                padding: 27px 18px 20px;
+            }
+
+            .hero h1 {
+                letter-spacing: -3px;
+            }
+
+            .hero p {
+                font-size: 12px;
+            }
+
+            .stats {
+                margin-top: 20px;
+            }
+
+            .genres {
+                padding-left: 18px;
+                padding-right: 18px;
+            }
+
+            .studio {
+                margin: 0 8px 12px;
+                border-radius: 18px;
+            }
+
+            .toolbar {
+                padding: 10px;
+            }
+
+            .controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            input[type="range"] {
+                flex: 1;
+                width: auto;
+            }
+
+            .grid-container {
+                padding: 10px;
+            }
+
+            .bottom {
+                padding: 12px;
+            }
+
+            .status {
+                padding: 0 18px 18px;
+            }
+
+            .live {
+                padding: 7px 9px;
+            }
+
+            .transport {
+                width: 100%;
+            }
+
+            .transport .tool {
+                flex: 1;
+                padding-left: 8px;
+                padding-right: 8px;
+            }
         }
     </style>
 </head>
+
 <body>
+
 <div class="machine">
+
+    <!-- TOP BAR -->
     <header class="topbar">
+
         <div class="brand">
-            <div class="brand-mark">B</div>
+
+            <div class="brand-mark">
+                B
+            </div>
+
             <div>
-                <div class="brand-name">BEAT<span>.HAHZ.LIVE</span></div>
-                <div class="brand-sub">THE INTERNET'S BEAT MACHINE</div>
-            </div>
-        </div>
-        <div class="live"><i class="live-dot"></i>LIVE</div>
-    </header>
-    <section class="hero">
-        <div>
-            <div class="eyebrow">PRODUCE WITHOUT LIMITS</div>
-            <h1>MAKE SOMETHING<br>THAT <span>SLAPS.</span></h1>
-            <p>Tap the grid. Flip the pattern. Share the beat. Every beat you make can become somebody else's starting point.</p>
-        </div>
-        <div class="stats">
-            <div class="stat"><strong>16</strong><small>STEPS</small></div>
-            <div class="stat"><strong>4</strong><small>TRACKS</small></div>
-            <div class="stat"><strong id="shareCount">0</strong><small>REMIXES</small></div>
-        </div>
-    </section>
-    <div class="genres">
-        <button class="genre active" data-genre="TRAP">TRAP</button>
-        <button class="genre" data-genre="DRILL">DRILL</button>
-        <button class="genre" data-genre="R&B">R&B</button>
-        <button class="genre" data-genre="AFRO">AFROBEATS</button>
-        <button class="genre" data-genre="JERSEY">JERSEY CLUB</button>
-        <button class="genre" data-genre="BOOM">BOOM BAP</button>
-        <button class="genre" data-genre="CUSTOM">CUSTOM</button>
-    </div>
-    <section class="studio">
-        <div class="toolbar">
-            <div class="transport">
-                <button class="tool play" id="playBtn">▶ PLAY</button>
-                <button class="tool test-btn" id="testBtn">🔊 TEST</button>
-                <button class="tool" id="clearBtn">CLEAR</button>
-                <button class="tool magic" id="flipBtn">✦ AI FLIP</button>
-            </div>
-            <div class="controls">
-                <div class="control">BPM <input id="bpmSlider" type="range" min="60" max="180" value="140"><span class="bpm" id="bpmValue">140</span></div>
-                <div class="control">SWING <input id="swingSlider" type="range" min="0" max="100" value="50"></div>
-            </div>
-        </div>
-        <div class="grid-container">
-            <div class="grid" id="grid">
-                <div class="playhead" id="playhead"></div>
-                <div class="step-numbers">
-                    <div></div><div class="step-number accent">1</div><div class="step-number">2</div><div class="step-number">3</div><div class="step-number">4</div><div class="step-number accent">5</div><div class="step-number">6</div><div class="step-number">7</div><div class="step-number">8</div><div class="step-number accent">9</div><div class="step-number">10</div><div class="step-number">11</div><div class="step-number">12</div><div class="step-number accent">13</div><div class="step-number">14</div><div class="step-number">15</div><div class="step-number">16</div>
+                <div class="brand-name">
+                    BEAT<span>.HAHZ.LIVE</span>
+                </div>
+
+                <div class="brand-sub">
+                    THE INTERNET'S BEAT MACHINE
                 </div>
             </div>
+
         </div>
-        <div class="bottom">
-            <div class="bottom-left">
-                <button class="action" id="randomBtn">🎲 RANDOM</button>
-                <button class="action" id="remixBtn">↻ REMIX</button>
-                <button class="action" id="saveBtn">＋ SAVE SLOT</button>
+
+        <div class="live">
+            <i class="live-dot"></i>
+            LIVE
+        </div>
+
+    </header>
+
+
+    <!-- HERO -->
+    <section class="hero">
+
+        <div>
+
+            <div class="eyebrow">
+                PRODUCE WITHOUT LIMITS
             </div>
-            <div class="bottom-right">
-                <button class="action share" id="shareBtn">↗ SHARE BEAT</button>
+
+            <h1>
+                MAKE SOMETHING<br>
+                THAT <span>SLAPS.</span>
+            </h1>
+
+            <p>
+                Tap the grid. Flip the pattern. Share the beat.
+                Every beat you make can become somebody else's starting point.
+            </p>
+
+        </div>
+
+        <div class="stats">
+
+            <div class="stat">
+                <strong>16</strong>
+                <small>STEPS</small>
             </div>
+
+            <div class="stat">
+                <strong>4</strong>
+                <small>TRACKS</small>
+            </div>
+
+            <div class="stat">
+                <strong id="shareCount">0</strong>
+                <small>REMIXES</small>
+            </div>
+
         </div>
+
     </section>
-    <section class="patterns">
-        <div class="pattern-title">PATTERN MEMORY</div>
-        <div class="slots">
-            <button class="slot active" data-slot="0">A — MAIN</button>
-            <button class="slot" data-slot="1">B — SWITCH</button>
-            <button class="slot" data-slot="2">C — DROP</button>
-            <button class="slot" data-slot="3">D — OUTRO</button>
-        </div>
-    </section>
-    <div class="status">
-        <span id="status">● READY — TAP TEST OR ANY PAD</span>
-        <span>BEAT.HAHZ.LIVE</span>
+
+
+    <!-- GENRES -->
+    <div class="genres">
+
+        <button class="genre active" data-genre="TRAP">
+            TRAP
+        </button>
+
+        <button class="genre" data-genre="DRILL">
+            DRILL
+        </button>
+
+        <button class="genre" data-genre="R&B">
+            R&B
+        </button>
+
+        <button class="genre" data-genre="AFRO">
+            AFROBEATS
+        </button>
+
+        <button class="genre" data-genre="JERSEY">
+            JERSEY CLUB
+        </button>
+
+        <button class="genre" data-genre="BOOM">
+            BOOM BAP
+        </button>
+
+        <button class="genre" data-genre="CUSTOM">
+            CUSTOM
+        </button>
+
     </div>
+
+
+    <!-- STUDIO -->
+    <section class="studio">
+
+        <!-- TOOLBAR -->
+        <div class="toolbar">
+
+            <div class="transport">
+
+                <button
+                    class="tool play"
+                    id="playBtn"
+                    type="button">
+                    ▶ PLAY
+                </button>
+
+                <button
+                    class="tool test-btn"
+                    id="testBtn"
+                    type="button">
+                    🔊 TEST
+                </button>
+
+                <button
+                    class="tool"
+                    id="clearBtn"
+                    type="button">
+                    CLEAR
+                </button>
+
+                <button
+                    class="tool magic"
+                    id="flipBtn"
+                    type="button">
+                    ✦ AI FLIP
+                </button>
+
+            </div>
+
+
+            <div class="controls">
+
+                <div class="control">
+
+                    BPM
+
+                    <input
+                        id="bpmSlider"
+                        type="range"
+                        min="60"
+                        max="180"
+                        value="140">
+
+                    <span
+                        class="bpm"
+                        id="bpmValue">
+                        140
+                    </span>
+
+                </div>
+
+                <div class="control">
+
+                    SWING
+
+                    <input
+                        id="swingSlider"
+                        type="range"
+                        min="0"
+                        max="100"
+                        value="50">
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- GRID -->
+        <div class="grid-container">
+
+            <div
+                class="grid"
+                id="grid">
+
+                <div
+                    class="playhead"
+                    id="playhead">
+                </div>
+
+
+                <div class="step-numbers">
+
+                    <div></div>
+
+                    <div class="step-number accent">1</div>
+                    <div class="step-number">2</div>
+                    <div class="step-number">3</div>
+                    <div class="step-number">4</div>
+
+                    <div class="step-number accent">5</div>
+                    <div class="step-number">6</div>
+                    <div class="step-number">7</div>
+                    <div class="step-number">8</div>
+
+                    <div class="step-number accent">9</div>
+                    <div class="step-number">10</div>
+                    <div class="step-number">11</div>
+                    <div class="step-number">12</div>
+
+                    <div class="step-number accent">13</div>
+                    <div class="step-number">14</div>
+                    <div class="step-number">15</div>
+                    <div class="step-number">16</div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- BOTTOM ACTIONS -->
+        <div class="bottom">
+
+            <div class="bottom-left">
+
+                <button
+                    class="action"
+                    id="randomBtn"
+                    type="button">
+                    🎲 RANDOM
+                </button>
+
+                <button
+                    class="action"
+                    id="remixBtn"
+                    type="button">
+                    ↻ REMIX
+                </button>
+
+                <button
+                    class="action"
+                    id="saveBtn"
+                    type="button">
+                    ＋ SAVE SLOT
+                </button>
+
+            </div>
+
+            <div class="bottom-right">
+
+                <button
+                    class="action share"
+                    id="shareBtn"
+                    type="button">
+                    ↗ SHARE BEAT
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- PATTERN MEMORY -->
+    <section class="patterns">
+
+        <div class="pattern-title">
+            PATTERN MEMORY
+        </div>
+
+        <div class="slots">
+
+            <button
+                class="slot active"
+                data-slot="0"
+                type="button">
+                A — MAIN
+            </button>
+
+            <button
+                class="slot"
+                data-slot="1"
+                type="button">
+                B — SWITCH
+            </button>
+
+            <button
+                class="slot"
+                data-slot="2"
+                type="button">
+                C — DROP
+            </button>
+
+            <button
+                class="slot"
+                data-slot="3"
+                type="button">
+                D — OUTRO
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- STATUS -->
+    <div class="status">
+
+        <span id="status">
+            ● READY — TAP TEST OR ANY PAD
+        </span>
+
+        <span id="audioState">
+            AUDIO: OFF
+        </span>
+
+        <span>
+            BEAT.HAHZ.LIVE
+        </span>
+
+    </div>
+
 </div>
 
+
 <script>
-// ─────────────────────────────────────────────────────────────────────────────
-// BEAT.HAHZ.LIVE — iOS / SAFARI SAFE AUDIO ENGINE
-// ─────────────────────────────────────────────────────────────────────────────
+
+/*
+============================================================
+ BEAT.HAHZ.LIVE
+ Web Audio Engine
+ iOS / Safari / Chrome / Desktop compatible
+============================================================
+*/
+
+
+/* =========================================================
+   AUDIO ENGINE
+========================================================= */
 
 let audioCtx = null;
 let masterGain = null;
@@ -335,90 +1015,229 @@ const labels = [
     ["MID TOM", "◆"]
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CREATE AUDIO ENGINE
-// ─────────────────────────────────────────────────────────────────────────────
+
+/* =========================================================
+   DOM
+========================================================= */
+
+const status =
+    document.getElementById("status");
+
+const audioState =
+    document.getElementById("audioState");
+
+
+/* =========================================================
+   AUDIO STATUS
+========================================================= */
+
+function setAudioStatus(text, type = "") {
+
+    audioState.textContent = text;
+
+    audioState.classList.remove(
+        "ready",
+        "error"
+    );
+
+    if (type) {
+        audioState.classList.add(type);
+    }
+}
+
+
+/* =========================================================
+   CREATE AUDIO ENGINE
+========================================================= */
 
 function initAudio() {
 
-    if (!audioCtx) {
+    if (audioCtx) {
+        return true;
+    }
 
-        const AudioContextClass =
-            window.AudioContext ||
-            window.webkitAudioContext;
+    const AudioContextClass =
+        window.AudioContext ||
+        window.webkitAudioContext;
 
-        if (!AudioContextClass) {
-            console.error("Web Audio API unavailable.");
-            return false;
-        }
+    if (!AudioContextClass) {
 
-        audioCtx = new AudioContextClass();
+        console.error(
+            "Web Audio API is not supported."
+        );
 
-        masterGain = audioCtx.createGain();
-        masterGain.gain.value = 0.85;
+        setAudioStatus(
+            "AUDIO: UNSUPPORTED",
+            "error"
+        );
 
-        masterGain.connect(audioCtx.destination);
+        return false;
+    }
+
+
+    try {
+
+        audioCtx =
+            new AudioContextClass();
+
+
+        masterGain =
+            audioCtx.createGain();
+
+
+        masterGain.gain.setValueAtTime(
+            0.85,
+            audioCtx.currentTime
+        );
+
+
+        masterGain.connect(
+            audioCtx.destination
+        );
+
+
+        /*
+        IMPORTANT:
+
+        Generate the buffers only after
+        AudioContext exists.
+        */
+
+        drumBuffers =
+            createDrumBuffers();
+
 
         console.log(
             "🔊 AudioContext created:",
             audioCtx.state
         );
 
-        drumBuffers = createDrumBuffers();
-    }
 
-    return true;
+        setAudioStatus(
+            "AUDIO: " + audioCtx.state.toUpperCase()
+        );
+
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "Audio initialization failed:",
+            error
+        );
+
+        setAudioStatus(
+            "AUDIO: ERROR",
+            "error"
+        );
+
+        return false;
+    }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// UNLOCK AUDIO
-// IMPORTANT: CALL DIRECTLY FROM pointerdown
-// ─────────────────────────────────────────────────────────────────────────────
 
-function unlockAudio() {
+/* =========================================================
+   AUDIO UNLOCK
+========================================================= */
+
+async function unlockAudio() {
 
     if (!initAudio()) {
         return false;
     }
 
+
     try {
 
-        // Safari can start in suspended/interrupted state.
+        /*
+        Safari/iOS often creates the context
+        in the "suspended" state.
+        */
+
         if (audioCtx.state !== "running") {
 
-            const resumePromise = audioCtx.resume();
+            console.log(
+                "🔓 Resuming AudioContext..."
+            );
 
-            // Don't wait here before triggering audio.
-            if (resumePromise) {
-                resumePromise.catch(err => {
-                    console.warn(
-                        "Audio resume error:",
-                        err
-                    );
-                });
-            }
+            /*
+            IMPORTANT:
+
+            resume() is called directly from
+            the user interaction handler.
+            */
+
+            await audioCtx.resume();
         }
 
-        // Create a tiny silent oscillator DURING the user gesture.
-        // This helps establish audio playback on iOS Safari.
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
 
-        gain.gain.value = 0.00001;
+        /*
+        Confirm that Safari actually resumed.
+        */
+
+        if (audioCtx.state !== "running") {
+
+            console.warn(
+                "AudioContext did not resume:",
+                audioCtx.state
+            );
+
+            setAudioStatus(
+                "AUDIO: " +
+                audioCtx.state.toUpperCase(),
+                "error"
+            );
+
+            return false;
+        }
+
+
+        /*
+        Tiny silent oscillator.
+
+        This helps iOS establish an active
+        audio destination after a user gesture.
+        */
+
+        const osc =
+            audioCtx.createOscillator();
+
+        const gain =
+            audioCtx.createGain();
+
+
+        gain.gain.setValueAtTime(
+            0.00001,
+            audioCtx.currentTime
+        );
+
 
         osc.connect(gain);
         gain.connect(masterGain);
 
-        osc.start();
+
+        osc.start(
+            audioCtx.currentTime
+        );
+
 
         osc.stop(
             audioCtx.currentTime + 0.02
         );
 
+
+        setAudioStatus(
+            "AUDIO: READY",
+            "ready"
+        );
+
+
         console.log(
-            "🔓 Audio unlock attempted:",
+            "🔓 Audio unlocked:",
             audioCtx.state
         );
+
 
         return true;
 
@@ -429,20 +1248,34 @@ function unlockAudio() {
             error
         );
 
+
+        setAudioStatus(
+            "AUDIO: BLOCKED",
+            "error"
+        );
+
+
         return false;
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// DRUM BUFFERS
-// ─────────────────────────────────────────────────────────────────────────────
+
+/* =========================================================
+   CREATE DRUM BUFFERS
+========================================================= */
 
 function createDrumBuffers() {
 
     const ctx = audioCtx;
-    const sr = ctx.sampleRate;
 
-    // KICK
+    const sr =
+        ctx.sampleRate;
+
+
+    /* =====================================================
+       KICK
+    ===================================================== */
+
     const kickLength =
         Math.floor(sr * 0.4);
 
@@ -456,9 +1289,15 @@ function createDrumBuffers() {
     const kd =
         kick.getChannelData(0);
 
-    for (let i = 0; i < kickLength; i++) {
 
-        const t = i / sr;
+    for (
+        let i = 0;
+        i < kickLength;
+        i++
+    ) {
+
+        const t =
+            i / sr;
 
         const envelope =
             Math.exp(-t * 12);
@@ -472,6 +1311,7 @@ function createDrumBuffers() {
             Math.exp(-t * 80) *
             0.15;
 
+
         kd[i] =
             Math.sin(
                 2 *
@@ -480,11 +1320,16 @@ function createDrumBuffers() {
                 t
             ) *
             envelope *
-            0.8 +
+            0.8
+            +
             click;
     }
 
-    // SNARE
+
+    /* =====================================================
+       SNARE
+    ===================================================== */
+
     const snareLength =
         Math.floor(sr * 0.25);
 
@@ -498,15 +1343,23 @@ function createDrumBuffers() {
     const sd =
         snare.getChannelData(0);
 
-    for (let i = 0; i < snareLength; i++) {
 
-        const t = i / sr;
+    for (
+        let i = 0;
+        i < snareLength;
+        i++
+    ) {
+
+        const t =
+            i / sr;
 
         const envelope =
             Math.exp(-t * 18);
 
         const noise =
-            (Math.random() * 2 - 1) *
+            (
+                Math.random() * 2 - 1
+            ) *
             envelope *
             0.7;
 
@@ -520,12 +1373,17 @@ function createDrumBuffers() {
             Math.exp(-t * 15) *
             0.4;
 
+
         sd[i] =
             noise +
             tone;
     }
 
-    // LOW TOM
+
+    /* =====================================================
+       LOW TOM
+    ===================================================== */
+
     const tomLength =
         Math.floor(sr * 0.3);
 
@@ -539,9 +1397,15 @@ function createDrumBuffers() {
     const ld =
         lowTom.getChannelData(0);
 
-    for (let i = 0; i < tomLength; i++) {
 
-        const t = i / sr;
+    for (
+        let i = 0;
+        i < tomLength;
+        i++
+    ) {
+
+        const t =
+            i / sr;
 
         ld[i] =
             Math.sin(
@@ -554,7 +1418,11 @@ function createDrumBuffers() {
             0.9;
     }
 
-    // MID TOM
+
+    /* =====================================================
+       MID TOM
+    ===================================================== */
+
     const midTom =
         ctx.createBuffer(
             1,
@@ -565,9 +1433,15 @@ function createDrumBuffers() {
     const md =
         midTom.getChannelData(0);
 
-    for (let i = 0; i < tomLength; i++) {
 
-        const t = i / sr;
+    for (
+        let i = 0;
+        i < tomLength;
+        i++
+    ) {
+
+        const t =
+            i / sr;
 
         md[i] =
             Math.sin(
@@ -580,6 +1454,7 @@ function createDrumBuffers() {
             0.9;
     }
 
+
     return [
         kick,
         snare,
@@ -588,33 +1463,44 @@ function createDrumBuffers() {
     ];
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PLAY DRUM
-// ─────────────────────────────────────────────────────────────────────────────
+
+/* =========================================================
+   PLAY SOUND
+========================================================= */
 
 function playSound(row) {
 
     if (!audioCtx) {
-        console.warn("AudioContext not initialized.");
-        return;
+
+        console.warn(
+            "AudioContext not initialized."
+        );
+
+        return false;
     }
+
 
     if (!masterGain) {
-        console.warn("Master gain unavailable.");
-        return;
+
+        console.warn(
+            "Master gain unavailable."
+        );
+
+        return false;
     }
+
 
     if (!drumBuffers[row]) {
+
         console.warn(
-            "No drum buffer:",
+            "Drum buffer unavailable:",
             row
         );
-        return;
+
+        return false;
     }
 
-    // IMPORTANT:
-    // Don't await anything here.
-    // This function should play immediately.
+
     if (audioCtx.state !== "running") {
 
         console.warn(
@@ -622,8 +1508,9 @@ function playSound(row) {
             audioCtx.state
         );
 
-        return;
+        return false;
     }
+
 
     try {
 
@@ -633,25 +1520,33 @@ function playSound(row) {
         const gain =
             audioCtx.createGain();
 
+
         source.buffer =
             drumBuffers[row];
+
 
         gain.gain.setValueAtTime(
             0.9,
             audioCtx.currentTime
         );
 
+
         source.connect(gain);
         gain.connect(masterGain);
+
 
         source.start(
             audioCtx.currentTime
         );
 
+
         console.log(
             "🥁 PLAY:",
             labels[row][0]
         );
+
+
+        return true;
 
     } catch (error) {
 
@@ -659,329 +1554,1365 @@ function playSound(row) {
             "❌ Drum playback error:",
             error
         );
+
+        return false;
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// TEST BUTTON
-// ─────────────────────────────────────────────────────────────────────────────
+
+/* =========================================================
+   TEST BUTTON
+========================================================= */
 
 document
     .getElementById("testBtn")
     .addEventListener(
         "pointerdown",
-        function(e) {
+        async function(e) {
 
             e.preventDefault();
 
-            // Unlock FIRST.
-            unlockAudio();
 
-            // Then attempt the kick immediately.
-            // No await.
-            setTimeout(() => {
+            status.textContent =
+                "🔊 STARTING AUDIO...";
 
-                if (
-                    audioCtx &&
-                    audioCtx.state === "running"
-                ) {
-                    playSound(0);
 
-                    document.getElementById("status").textContent =
-                        "🔊 AUDIO TEST — KICK";
+            const ready =
+                await unlockAudio();
 
-                } else {
 
-                    document.getElementById("status").textContent =
-                        "⚠️ AUDIO BLOCKED — TAP TEST AGAIN";
-                }
+            if (!ready) {
 
-            }, 30);
+                status.textContent =
+                    "⚠️ AUDIO BLOCKED — TAP TEST AGAIN";
+
+                return;
+            }
+
+
+            const played =
+                playSound(0);
+
+
+            if (played) {
+
+                status.textContent =
+                    "🔊 AUDIO TEST — KICK";
+
+            } else {
+
+                status.textContent =
+                    "⚠️ KICK COULD NOT PLAY";
+            }
+
         }
     );
 
-// ─────────────────────────────────────────────────────────────────────────────
-// REMOVE THE GLOBAL PASSIVE AUDIO RESUME
-// DO NOT USE:
-// document.addEventListener("pointerdown", ...)
-// ─────────────────────────────────────────────────────────────────────────────
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  REST OF APPLICATION (grid, sequencer, patterns, etc.)
-// ─────────────────────────────────────────────────────────────────────────────
+/* =========================================================
+   SEQUENCER STATE
+========================================================= */
 
-let pattern = Array.from({ length: ROWS }, () => Array(STEPS).fill(false));
-let patterns = [null, null, null, null];
-let playing = false, currentStep = 0, timer = null;
-let bpm = 140, swing = 50;
+let pattern =
+    Array.from(
+        { length: ROWS },
+        () => Array(STEPS).fill(false)
+    );
 
-const grid = document.getElementById("grid");
-const playhead = document.getElementById("playhead");
-const playBtn = document.getElementById("playBtn");
-const bpmSlider = document.getElementById("bpmSlider");
-const bpmValue = document.getElementById("bpmValue");
-const swingSlider = document.getElementById("swingSlider");
-const status = document.getElementById("status");
+
+let patterns =
+    [null, null, null, null];
+
+
+let playing = false;
+let currentStep = 0;
+let timer = null;
+
+let bpm = 140;
+let swing = 50;
+
+
+/* =========================================================
+   DOM REFERENCES
+========================================================= */
+
+const grid =
+    document.getElementById("grid");
+
+const playhead =
+    document.getElementById("playhead");
+
+const playBtn =
+    document.getElementById("playBtn");
+
+const bpmSlider =
+    document.getElementById("bpmSlider");
+
+const bpmValue =
+    document.getElementById("bpmValue");
+
+const swingSlider =
+    document.getElementById("swingSlider");
+
+
+/* =========================================================
+   BUILD GRID
+========================================================= */
 
 function buildGrid() {
-    document.querySelectorAll(".beat-row").forEach(el => el.remove());
-    for (let row = 0; row < ROWS; row++) {
-        const rowDiv = document.createElement("div");
-        rowDiv.className = "row beat-row";
-        const label = document.createElement("div");
-        label.className = "row-label";
-        label.innerHTML = `<span class="sound-icon">${labels[row][1]}</span>${labels[row][0]}`;
+
+    document
+        .querySelectorAll(".beat-row")
+        .forEach(el => el.remove());
+
+
+    for (
+        let row = 0;
+        row < ROWS;
+        row++
+    ) {
+
+        const rowDiv =
+            document.createElement("div");
+
+        rowDiv.className =
+            "row beat-row";
+
+
+        const label =
+            document.createElement("div");
+
+        label.className =
+            "row-label";
+
+
+        label.innerHTML =
+            `<span class="sound-icon">
+                ${labels[row][1]}
+            </span>
+            ${labels[row][0]}`;
+
+
         rowDiv.appendChild(label);
-        for (let step = 0; step < STEPS; step++) {
-            const pad = document.createElement("button");
-            pad.className = "pad";
-            pad.dataset.row = row;
-            pad.dataset.step = step;
-            if (pattern[row][step]) pad.classList.add("on");
 
-            pad.addEventListener("pointerdown", function(e) {
-                e.preventDefault();
-                // This is the actual iOS user gesture.
-                unlockAudio();
 
-                // Toggle pattern
-                pattern[row][step] = !pattern[row][step];
-                pad.classList.toggle("on", pattern[row][step]);
-                saveToURL();
-                status.textContent = "● BEAT UPDATED — KEEP COOKING";
+        for (
+            let step = 0;
+            step < STEPS;
+            step++
+        ) {
 
-                // Preview immediately if turned ON and audio is running.
-                if (
-                    pattern[row][step] &&
-                    audioCtx &&
-                    audioCtx.state === "running"
-                ) {
-                    playSound(row);
+            const pad =
+                document.createElement("button");
+
+            pad.className =
+                "pad";
+
+            pad.type =
+                "button";
+
+            pad.dataset.row =
+                row;
+
+            pad.dataset.step =
+                step;
+
+
+            if (
+                pattern[row][step]
+            ) {
+                pad.classList.add("on");
+            }
+
+
+            /*
+            IMPORTANT:
+
+            pointerdown is used so that the
+            user gesture is captured immediately
+            on iOS Safari.
+            */
+
+            pad.addEventListener(
+                "pointerdown",
+                async function(e) {
+
+                    e.preventDefault();
+
+
+                    /*
+                    Unlock audio first.
+                    */
+
+                    const ready =
+                        await unlockAudio();
+
+
+                    /*
+                    Toggle pattern.
+                    */
+
+                    pattern[row][step] =
+                        !pattern[row][step];
+
+
+                    pad.classList.toggle(
+                        "on",
+                        pattern[row][step]
+                    );
+
+
+                    saveToURL();
+
+
+                    status.textContent =
+                        "● BEAT UPDATED — KEEP COOKING";
+
+
+                    /*
+                    Preview the sound immediately.
+                    */
+
+                    if (
+                        pattern[row][step] &&
+                        ready
+                    ) {
+
+                        playSound(row);
+                    }
+
                 }
-            });
+            );
+
 
             rowDiv.appendChild(pad);
         }
+
+
         grid.appendChild(rowDiv);
     }
-    if (playing) updatePlayhead();
+
+
+    if (playing) {
+        updatePlayhead();
+    }
 }
+
+
 buildGrid();
 
+
+/* =========================================================
+   PLAYHEAD
+========================================================= */
+
 function updatePlayhead() {
-    const pads = document.querySelectorAll(`.pad[data-step="${currentStep}"]`);
-    if (pads.length === 0) return;
-    const gridRect = grid.getBoundingClientRect();
+
+    const pads =
+        document.querySelectorAll(
+            `.pad[data-step="${currentStep}"]`
+        );
+
+
+    if (pads.length === 0) {
+        return;
+    }
+
+
+    const gridRect =
+        grid.getBoundingClientRect();
+
+
     let leftSum = 0;
-    pads.forEach(p => { const r = p.getBoundingClientRect(); leftSum += r.left - gridRect.left; });
-    playhead.style.left = `${leftSum / pads.length}px`;
+
+
+    pads.forEach(p => {
+
+        const r =
+            p.getBoundingClientRect();
+
+        leftSum +=
+            r.left -
+            gridRect.left;
+
+    });
+
+
+    playhead.style.left =
+        `${leftSum / pads.length}px`;
 }
+
+
+/* =========================================================
+   SEQUENCER STEP
+========================================================= */
 
 function step() {
-    document.querySelectorAll(".pad.playing").forEach(p => p.classList.remove("playing"));
-    const pads = document.querySelectorAll(`.pad[data-step="${currentStep}"]`);
+
+    document
+        .querySelectorAll(".pad.playing")
+        .forEach(
+            p =>
+                p.classList.remove(
+                    "playing"
+                )
+        );
+
+
+    const pads =
+        document.querySelectorAll(
+            `.pad[data-step="${currentStep}"]`
+        );
+
+
     pads.forEach(p => {
+
         p.classList.add("playing");
-        const row = Number(p.dataset.row);
-        if (pattern[row][currentStep]) {
+
+
+        const row =
+            Number(p.dataset.row);
+
+
+        if (
+            pattern[row][currentStep]
+        ) {
+
             playSound(row);
         }
+
     });
+
+
     updatePlayhead();
-    currentStep = (currentStep + 1) % STEPS;
+
+
+    currentStep =
+        (currentStep + 1) % STEPS;
 }
+
+
+/* =========================================================
+   SCHEDULER
+========================================================= */
 
 function schedule() {
-    if (!playing) return;
-    const beatLength = 60000 / bpm / 4;
-    const isOdd = (currentStep % 2 === 1);
-    const delay = isOdd ? beatLength * (1 + (swing/100 - 0.5) * 0.6) : beatLength;
-    timer = setTimeout(() => { step(); schedule(); }, delay);
+
+    if (!playing) {
+        return;
+    }
+
+
+    const beatLength =
+        60000 /
+        bpm /
+        4;
+
+
+    const isOdd =
+        currentStep % 2 === 1;
+
+
+    const delay =
+        isOdd
+            ? beatLength *
+                (
+                    1 +
+                    (
+                        swing / 100 -
+                        0.5
+                    ) *
+                    0.6
+                )
+            : beatLength;
+
+
+    timer =
+        setTimeout(
+            () => {
+
+                step();
+                schedule();
+
+            },
+            delay
+        );
 }
 
+
+/* =========================================================
+   START
+========================================================= */
+
 function start() {
-    if (playing) return;
-    // Audio already unlocked via PLAY button.
+
+    if (playing) {
+        return;
+    }
+
+
+    /*
+    Never allow a silent sequencer.
+    */
+
+    if (
+        !audioCtx ||
+        audioCtx.state !== "running"
+    ) {
+
+        status.textContent =
+            "⚠️ AUDIO NOT READY — TAP PLAY AGAIN";
+
+        return;
+    }
+
+
     playing = true;
-    playBtn.textContent = "■ STOP";
-    playBtn.style.background = "#ff3030";
-    playBtn.style.borderColor = "#ff3030";
-    playBtn.style.color = "#fff";
-    grid.classList.add("playing-grid");
-    status.textContent = "● PLAYING — LET IT COOK";
+
+
+    playBtn.textContent =
+        "■ STOP";
+
+
+    playBtn.style.background =
+        "#ff3030";
+
+
+    playBtn.style.borderColor =
+        "#ff3030";
+
+
+    playBtn.style.color =
+        "#fff";
+
+
+    grid.classList.add(
+        "playing-grid"
+    );
+
+
+    status.textContent =
+        "● PLAYING — LET IT COOK";
+
+
     currentStep = 0;
+
+
     step();
+
+
     schedule();
 }
 
+
+/* =========================================================
+   STOP
+========================================================= */
+
 function stop() {
+
     playing = false;
+
+
     clearTimeout(timer);
-    document.querySelectorAll(".pad.playing").forEach(p => p.classList.remove("playing"));
-    playBtn.textContent = "▶ PLAY";
-    playBtn.style.background = "";
-    playBtn.style.borderColor = "";
-    playBtn.style.color = "";
-    grid.classList.remove("playing-grid");
-    status.textContent = "● READY — TAP TEST OR ANY PAD";
+
+
+    timer = null;
+
+
+    document
+        .querySelectorAll(".pad.playing")
+        .forEach(
+            p =>
+                p.classList.remove(
+                    "playing"
+                )
+        );
+
+
+    playBtn.textContent =
+        "▶ PLAY";
+
+
+    playBtn.style.background =
+        "";
+
+
+    playBtn.style.borderColor =
+        "";
+
+
+    playBtn.style.color =
+        "";
+
+
+    grid.classList.remove(
+        "playing-grid"
+    );
+
+
+    status.textContent =
+        "● READY — TAP TEST OR ANY PAD";
+
+
     currentStep = 0;
+
+
     updatePlayhead();
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PLAY BUTTON — SINGLE HANDLER
-// ─────────────────────────────────────────────────────────────────────────────
 
-playBtn.addEventListener("pointerdown", function(e) {
-    e.preventDefault();
-    if (playing) {
-        stop();
-        return;
-    }
-    // Unlock audio before starting.
-    unlockAudio();
-    // Small delay to let the context resume and the silent oscillator play.
-    setTimeout(() => {
+/* =========================================================
+   PLAY BUTTON
+========================================================= */
+
+playBtn.addEventListener(
+    "pointerdown",
+    async function(e) {
+
+        e.preventDefault();
+
+
+        if (playing) {
+
+            stop();
+
+            return;
+        }
+
+
+        status.textContent =
+            "🔊 STARTING AUDIO...";
+
+
+        /*
+        Wait until Safari has actually
+        resumed the AudioContext.
+        */
+
+        const ready =
+            await unlockAudio();
+
+
+        if (!ready) {
+
+            status.textContent =
+                "⚠️ AUDIO BLOCKED — TAP TEST FIRST";
+
+            return;
+        }
+
+
         start();
-    }, 30);
-});
+    }
+);
+
+
+/* =========================================================
+   BPM
+========================================================= */
 
 bpmSlider.oninput = () => {
-    bpm = Number(bpmSlider.value);
-    bpmValue.textContent = bpm;
-    if (playing) { clearTimeout(timer); schedule(); }
+
+    bpm =
+        Number(
+            bpmSlider.value
+        );
+
+
+    bpmValue.textContent =
+        bpm;
+
+
+    if (playing) {
+
+        clearTimeout(timer);
+
+        schedule();
+    }
 };
+
+
+/* =========================================================
+   SWING
+========================================================= */
+
 swingSlider.oninput = () => {
-    swing = Number(swingSlider.value);
-    if (playing) { clearTimeout(timer); schedule(); }
+
+    swing =
+        Number(
+            swingSlider.value
+        );
+
+
+    if (playing) {
+
+        clearTimeout(timer);
+
+        schedule();
+    }
 };
 
-// ---- Actions ----
-document.getElementById("clearBtn").addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    pattern = Array.from({ length: ROWS }, () => Array(STEPS).fill(false));
-    buildGrid();
-    saveToURL();
-    status.textContent = "● GRID CLEARED — START FRESH";
-});
-document.getElementById("randomBtn").addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    for (let r=0; r<ROWS; r++)
-        for (let s=0; s<STEPS; s++) {
-            const prob = r===0 ? .45 : r===1 ? .28 : r===2 ? .20 : .25;
-            pattern[r][s] = Math.random() < prob;
-        }
-    buildGrid();
-    saveToURL();
-    status.textContent = "✦ RANDOM BEAT GENERATED";
-});
-document.getElementById("flipBtn").addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    for (let r=0; r<ROWS; r++)
-        for (let s=0; s<STEPS; s++)
-            if (Math.random() < .28) pattern[r][s] = !pattern[r][s];
-    buildGrid();
-    saveToURL();
-    status.textContent = "✦ AI FLIP — NEW ENERGY UNLOCKED";
-});
-document.getElementById("remixBtn").addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    for (let r=0; r<ROWS; r++)
-        pattern[r] = pattern[r].map(v => Math.random() < .2 ? !v : v);
-    buildGrid();
-    saveToURL();
-    status.textContent = "↻ REMIXED — SAME DNA, NEW BEAT";
-});
 
-// Genres
-document.querySelectorAll(".genre").forEach(btn => {
-    btn.addEventListener("pointerdown", (e) => {
-        e.preventDefault();
-        document.querySelectorAll(".genre").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        applyGenre(btn.dataset.genre);
+/* =========================================================
+   CLEAR
+========================================================= */
+
+document
+    .getElementById("clearBtn")
+    .addEventListener(
+        "pointerdown",
+        e => {
+
+            e.preventDefault();
+
+
+            pattern =
+                Array.from(
+                    {
+                        length: ROWS
+                    },
+                    () =>
+                        Array(
+                            STEPS
+                        ).fill(false)
+                );
+
+
+            buildGrid();
+
+
+            saveToURL();
+
+
+            status.textContent =
+                "● GRID CLEARED — START FRESH";
+        }
+    );
+
+
+/* =========================================================
+   RANDOM
+========================================================= */
+
+document
+    .getElementById("randomBtn")
+    .addEventListener(
+        "pointerdown",
+        e => {
+
+            e.preventDefault();
+
+
+            for (
+                let r = 0;
+                r < ROWS;
+                r++
+            ) {
+
+                for (
+                    let s = 0;
+                    s < STEPS;
+                    s++
+                ) {
+
+                    const prob =
+                        r === 0
+                            ? .45
+                            : r === 1
+                                ? .28
+                                : r === 2
+                                    ? .20
+                                    : .25;
+
+
+                    pattern[r][s] =
+                        Math.random() <
+                        prob;
+                }
+            }
+
+
+            buildGrid();
+
+
+            saveToURL();
+
+
+            status.textContent =
+                "✦ RANDOM BEAT GENERATED";
+        }
+    );
+
+
+/* =========================================================
+   AI FLIP
+========================================================= */
+
+document
+    .getElementById("flipBtn")
+    .addEventListener(
+        "pointerdown",
+        e => {
+
+            e.preventDefault();
+
+
+            for (
+                let r = 0;
+                r < ROWS;
+                r++
+            ) {
+
+                for (
+                    let s = 0;
+                    s < STEPS;
+                    s++
+                ) {
+
+                    if (
+                        Math.random() < .28
+                    ) {
+
+                        pattern[r][s] =
+                            !pattern[r][s];
+                    }
+                }
+            }
+
+
+            buildGrid();
+
+
+            saveToURL();
+
+
+            status.textContent =
+                "✦ AI FLIP — NEW ENERGY UNLOCKED";
+        }
+    );
+
+
+/* =========================================================
+   REMIX
+========================================================= */
+
+document
+    .getElementById("remixBtn")
+    .addEventListener(
+        "pointerdown",
+        e => {
+
+            e.preventDefault();
+
+
+            for (
+                let r = 0;
+                r < ROWS;
+                r++
+            ) {
+
+                pattern[r] =
+                    pattern[r].map(
+                        v =>
+                            Math.random() < .2
+                                ? !v
+                                : v
+                    );
+            }
+
+
+            buildGrid();
+
+
+            saveToURL();
+
+
+            status.textContent =
+                "↻ REMIXED — SAME DNA, NEW BEAT";
+        }
+    );
+
+
+/* =========================================================
+   GENRES
+========================================================= */
+
+document
+    .querySelectorAll(".genre")
+    .forEach(btn => {
+
+        btn.addEventListener(
+            "pointerdown",
+            e => {
+
+                e.preventDefault();
+
+
+                document
+                    .querySelectorAll(".genre")
+                    .forEach(
+                        b =>
+                            b.classList.remove(
+                                "active"
+                            )
+                    );
+
+
+                btn.classList.add(
+                    "active"
+                );
+
+
+                applyGenre(
+                    btn.dataset.genre
+                );
+            }
+        );
+
     });
-});
-function clearPattern() { pattern = Array.from({ length: ROWS }, () => Array(STEPS).fill(false)); }
+
+
+/* =========================================================
+   CLEAR PATTERN
+========================================================= */
+
+function clearPattern() {
+
+    pattern =
+        Array.from(
+            {
+                length: ROWS
+            },
+            () =>
+                Array(
+                    STEPS
+                ).fill(false)
+        );
+}
+
+
+/* =========================================================
+   GENRE PRESETS
+========================================================= */
+
 function applyGenre(genre) {
+
     clearPattern();
+
+
     const presets = {
-        TRAP: [[0,4,8,12], [4,12], [2,6,10,14], []],
-        DRILL: [[0,3,7,10,14], [4,12], [], [1,3,5,7,9,11,13,15]],
-        "R&B": [[0,6,8,12], [4,12], [], [2,6,10,14]],
-        AFRO: [[0,3,6,8,11,14], [4,12], [], [2,5,8,10,13,15]],
-        JERSEY: [[0,3,6,9,12,15], [4,7,12,15], [1,5,9,13], []],
-        BOOM: [[0,6,8,14], [4,12], [], [2,6,10,14]],
+
+        TRAP: [
+            [0,4,8,12],
+            [4,12],
+            [2,6,10,14],
+            []
+        ],
+
+        DRILL: [
+            [0,3,7,10,14],
+            [4,12],
+            [],
+            [1,3,5,7,9,11,13,15]
+        ],
+
+        "R&B": [
+            [0,6,8,12],
+            [4,12],
+            [],
+            [2,6,10,14]
+        ],
+
+        AFRO: [
+            [0,3,6,8,11,14],
+            [4,12],
+            [],
+            [2,5,8,10,13,15]
+        ],
+
+        JERSEY: [
+            [0,3,6,9,12,15],
+            [4,7,12,15],
+            [1,5,9,13],
+            []
+        ],
+
+        BOOM: [
+            [0,6,8,14],
+            [4,12],
+            [],
+            [2,6,10,14]
+        ],
+
         CUSTOM: []
     };
-    (presets[genre] || []).forEach((steps,row) => steps.forEach(i => pattern[row][i] = true));
+
+
+    (
+        presets[genre] ||
+        []
+    ).forEach(
+        (steps, row) => {
+
+            steps.forEach(
+                i =>
+                    pattern[row][i] =
+                        true
+            );
+        }
+    );
+
+
     buildGrid();
+
+
     saveToURL();
-    status.textContent = `${genre} MODE — BEAT LOADED`;
+
+
+    status.textContent =
+        `${genre} MODE — BEAT LOADED`;
 }
 
-// Pattern slots
-document.querySelectorAll(".slot").forEach(slot => {
-    slot.addEventListener("pointerdown", (e) => {
-        e.preventDefault();
-        const i = Number(slot.dataset.slot);
-        document.querySelectorAll(".slot").forEach(s => s.classList.remove("active"));
-        slot.classList.add("active");
-        if (patterns[i]) {
-            pattern = JSON.parse(JSON.stringify(patterns[i]));
-            buildGrid();
-            status.textContent = `PATTERN ${i+1} LOADED`;
-        } else {
-            patterns[i] = JSON.parse(JSON.stringify(pattern));
-            status.textContent = `PATTERN ${i+1} SAVED`;
-        }
-    });
-});
-document.getElementById("saveBtn").addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    const active = document.querySelector(".slot.active");
-    const i = Number(active.dataset.slot);
-    patterns[i] = JSON.parse(JSON.stringify(pattern));
-    status.textContent = `✓ ${active.textContent} SAVED`;
-});
 
-// URL sharing
+/* =========================================================
+   PATTERN SLOTS
+========================================================= */
+
+document
+    .querySelectorAll(".slot")
+    .forEach(slot => {
+
+        slot.addEventListener(
+            "pointerdown",
+            e => {
+
+                e.preventDefault();
+
+
+                const i =
+                    Number(
+                        slot.dataset.slot
+                    );
+
+
+                document
+                    .querySelectorAll(".slot")
+                    .forEach(
+                        s =>
+                            s.classList.remove(
+                                "active"
+                            )
+                    );
+
+
+                slot.classList.add(
+                    "active"
+                );
+
+
+                if (patterns[i]) {
+
+                    pattern =
+                        JSON.parse(
+                            JSON.stringify(
+                                patterns[i]
+                            )
+                        );
+
+
+                    buildGrid();
+
+
+                    status.textContent =
+                        `PATTERN ${i + 1} LOADED`;
+
+                } else {
+
+                    patterns[i] =
+                        JSON.parse(
+                            JSON.stringify(
+                                pattern
+                            )
+                        );
+
+
+                    status.textContent =
+                        `PATTERN ${i + 1} SAVED`;
+                }
+
+            }
+        );
+
+    });
+
+
+/* =========================================================
+   SAVE SLOT
+========================================================= */
+
+document
+    .getElementById("saveBtn")
+    .addEventListener(
+        "pointerdown",
+        e => {
+
+            e.preventDefault();
+
+
+            const active =
+                document.querySelector(
+                    ".slot.active"
+                );
+
+
+            const i =
+                Number(
+                    active.dataset.slot
+                );
+
+
+            patterns[i] =
+                JSON.parse(
+                    JSON.stringify(
+                        pattern
+                    )
+                );
+
+
+            status.textContent =
+                `✓ ${active.textContent} SAVED`;
+        }
+    );
+
+
+/* =========================================================
+   URL SHARING
+========================================================= */
+
 function encodePattern() {
+
     let bits = "";
-    pattern.forEach(row => row.forEach(v => bits += v ? "1" : "0"));
-    const n = BigInt("0b" + bits);
+
+
+    pattern.forEach(
+        row =>
+            row.forEach(
+                v =>
+                    bits +=
+                        v ? "1" : "0"
+            )
+    );
+
+
+    const n =
+        BigInt(
+            "0b" + bits
+        );
+
+
     return n.toString(36);
 }
-function decodePattern(code) {
-    try {
-        const n = BigInt(parseInt(code, 36));
-        let bits = n.toString(2).padStart(ROWS*STEPS, "0").slice(-(ROWS*STEPS));
-        let i=0;
-        for (let r=0; r<ROWS; r++)
-            for (let s=0; s<STEPS; s++)
-                pattern[r][s] = bits[i++] === "1";
-        buildGrid();
-    } catch(_) {}
-}
-function saveToURL() { history.replaceState(null, "", "#" + encodePattern()); }
-document.getElementById("shareBtn").addEventListener("pointerdown", async () => {
-    saveToURL();
-    const url = location.href;
-    try {
-        await navigator.clipboard.writeText(url);
-        status.textContent = "↗ BEAT LINK COPIED — SEND IT TO THE WORLD";
-        document.getElementById("shareCount").textContent = Number(document.getElementById("shareCount").textContent) + 1;
-    } catch(_) {
-        prompt("Copy your beat link:", url);
+
+
+/*
+IMPORTANT:
+
+parseInt() can lose precision for
+large 64-bit+ pattern values.
+
+This decoder uses a custom base36
+BigInt converter instead.
+*/
+
+function base36ToBigInt(str) {
+
+    const chars =
+        "0123456789abcdefghijklmnopqrstuvwxyz";
+
+
+    let result = 0n;
+
+
+    for (
+        const char of str.toLowerCase()
+    ) {
+
+        const value =
+            chars.indexOf(char);
+
+
+        if (value < 0) {
+            throw new Error(
+                "Invalid base36 character"
+            );
+        }
+
+
+        result =
+            result * 36n +
+            BigInt(value);
     }
-});
-if (location.hash) decodePattern(location.hash.substring(1));
 
-document.addEventListener("keydown", e => {
-    if (e.code === "Space") { e.preventDefault(); playing ? stop() : start(); }
-});
 
-console.log("✅ BEAT.HAHZ.LIVE ready – tap TEST or any pad to hear audio.");
+    return result;
+}
+
+
+function decodePattern(code) {
+
+    try {
+
+        const n =
+            base36ToBigInt(code);
+
+
+        let bits =
+            n.toString(2);
+
+
+        bits =
+            bits.padStart(
+                ROWS * STEPS,
+                "0"
+            );
+
+
+        bits =
+            bits.slice(
+                -(ROWS * STEPS)
+            );
+
+
+        let i = 0;
+
+
+        for (
+            let r = 0;
+            r < ROWS;
+            r++
+        ) {
+
+            for (
+                let s = 0;
+                s < STEPS;
+                s++
+            ) {
+
+                pattern[r][s] =
+                    bits[i++] === "1";
+            }
+        }
+
+
+        buildGrid();
+
+
+    } catch (error) {
+
+        console.warn(
+            "Could not decode pattern:",
+            error
+        );
+    }
+}
+
+
+function saveToURL() {
+
+    try {
+
+        history.replaceState(
+            null,
+            "",
+            "#" + encodePattern()
+        );
+
+    } catch (error) {
+
+        console.warn(
+            "Could not save pattern to URL:",
+            error
+        );
+    }
+}
+
+
+/* =========================================================
+   SHARE
+========================================================= */
+
+document
+    .getElementById("shareBtn")
+    .addEventListener(
+        "pointerdown",
+        async function(e) {
+
+            e.preventDefault();
+
+
+            saveToURL();
+
+
+            const url =
+                location.href;
+
+
+            try {
+
+                await navigator.clipboard.writeText(
+                    url
+                );
+
+
+                status.textContent =
+                    "↗ BEAT LINK COPIED — SEND IT TO THE WORLD";
+
+
+                const shareCount =
+                    document.getElementById(
+                        "shareCount"
+                    );
+
+
+                shareCount.textContent =
+                    Number(
+                        shareCount.textContent
+                    ) + 1;
+
+
+            } catch (_) {
+
+                prompt(
+                    "Copy your beat link:",
+                    url
+                );
+            }
+
+        }
+    );
+
+
+/* =========================================================
+   LOAD PATTERN FROM URL
+========================================================= */
+
+if (location.hash) {
+
+    decodePattern(
+        location.hash.substring(1)
+    );
+}
+
+
+/* =========================================================
+   SPACEBAR
+========================================================= */
+
+document.addEventListener(
+    "keydown",
+    async e => {
+
+        if (
+            e.code !== "Space"
+        ) {
+            return;
+        }
+
+
+        e.preventDefault();
+
+
+        if (playing) {
+
+            stop();
+
+            return;
+        }
+
+
+        const ready =
+            await unlockAudio();
+
+
+        if (ready) {
+
+            start();
+
+        } else {
+
+            status.textContent =
+                "⚠️ AUDIO BLOCKED — TAP PLAY";
+        }
+
+    }
+);
+
+
+/* =========================================================
+   HANDLE PAGE VISIBILITY
+========================================================= */
+
+document.addEventListener(
+    "visibilitychange",
+    async () => {
+
+        if (
+            document.visibilityState ===
+            "visible"
+        ) {
+
+            /*
+            Safari can suspend audio when
+            the page loses focus.
+            */
+
+            if (
+                audioCtx &&
+                audioCtx.state ===
+                    "suspended"
+            ) {
+
+                try {
+
+                    await audioCtx.resume();
+
+                    setAudioStatus(
+                        "AUDIO: READY",
+                        "ready"
+                    );
+
+                } catch (error) {
+
+                    console.warn(
+                        "Could not resume audio:",
+                        error
+                    );
+                }
+            }
+        }
+    }
+);
+
+
+/* =========================================================
+   INITIAL STATUS
+========================================================= */
+
+setAudioStatus(
+    "AUDIO: OFF"
+);
+
+
+console.log(
+    "✅ BEAT.HAHZ.LIVE ready."
+);
+
+console.log(
+    "🎧 Tap TEST, PLAY, or any pad to activate audio."
+);
+
 </script>
+
 </body>
 </html>
