@@ -114,7 +114,7 @@
             background: #111112; color: #aaa; border-radius: 10px;
             cursor: pointer; font-weight: 800; font-size: 10px; transition: .2s;
             user-select: none;
-            touch-action: manipulation; /* improve iOS responsiveness */
+            touch-action: manipulation;
         }
         .tool:hover { color: #fff; border-color: #444; transform: translateY(-1px); }
         .play {
@@ -311,21 +311,19 @@
         </div>
     </section>
     <div class="status">
-        <span id="status">● READY — TAP A PAD OR TEST</span>
+        <span id="status">● READY — TAP TEST OR ANY PAD</span>
         <span>BEAT.HAHZ.LIVE</span>
     </div>
 </div>
 
 <script>
 // ─────────────────────────────────────────────────────────────────────────────
-//  ULTIMATE iOS AUDIO ENGINE – pointerdown + lazy resume
+//  iOS-PROOF AUDIO ENGINE – NO AWAIT IN playSound()
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ---- Lazy AudioContext ----
 let audioCtx = null;
 let drumBuffers = [];
 
-// ---- Get or create context ----
 function getAudioContext() {
     if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -334,23 +332,6 @@ function getAudioContext() {
     return audioCtx;
 }
 
-// ---- Ensure the context is running (must be called inside a user gesture) ----
-async function ensureAudioRunning() {
-    const ctx = getAudioContext();
-    if (ctx.state === "suspended") {
-        try {
-            await ctx.resume();
-            console.log(`✅ AudioContext resumed, state: ${ctx.state}`);
-            document.getElementById("status").textContent = "● AUDIO READY — PLAY AWAY";
-        } catch (e) {
-            console.warn("❌ Resume failed:", e);
-            document.getElementById("status").textContent = "⚠️ AUDIO RESUME FAILED";
-        }
-    }
-    return ctx.state === "running";
-}
-
-// ---- Generate drum sounds (using the current context) ----
 function generateBuffers(ctx) {
     const sr = ctx.sampleRate;
     // Kick
@@ -393,20 +374,19 @@ function generateBuffers(ctx) {
     return [kickBuf, snareBuf, lowTom, midTom];
 }
 
-// ---- Play a drum sound (row 0..3) ----
-async function playSound(row) {
+// ---- The critical function: NO async, NO await ----
+function playSound(row) {
     const ctx = getAudioContext();
-    // If buffers not ready, generate them now
     if (drumBuffers.length === 0) {
         drumBuffers = generateBuffers(ctx);
         console.log("🎵 Drum buffers generated");
     }
-    // Ensure audio is running
-    const ok = await ensureAudioRunning();
-    if (!ok) {
-        console.warn("⛔ Cannot play – context not running");
-        return;
+    // Resume if suspended – fire and forget (no await)
+    if (ctx.state === "suspended") {
+        ctx.resume();
+        console.log("⏳ Resuming AudioContext...");
     }
+    // Immediately create and start source – it will play when context resumes
     try {
         const src = ctx.createBufferSource();
         src.buffer = drumBuffers[row];
@@ -421,25 +401,23 @@ async function playSound(row) {
     }
 }
 
-// ---- Attach audio to pointerdown events ----
-// Test button
-document.getElementById("testBtn").addEventListener("pointerdown", async (e) => {
-    e.preventDefault(); // prevent double-firing on iOS
-    await playSound(0);
+// ---- Attach test button ----
+document.getElementById("testBtn").addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    playSound(0);
 });
 
-// ---- Pad click handler (to be attached later) ----
-// We'll attach a single event listener using event delegation on the grid
-// so that every pad works with pointerdown.
-
-// ---- Also attach to PLAY button to ensure context resumes ----
-document.getElementById("playBtn").addEventListener("pointerdown", async (e) => {
-    // Just ensure audio is running – the start() function will also call ensureAudioRunning
-    await ensureAudioRunning();
+// ---- Attach PLAY button ----
+document.getElementById("playBtn").addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    // Resume context if needed (without waiting)
+    const ctx = getAudioContext();
+    if (ctx.state === "suspended") ctx.resume();
+    // Toggle play/stop
+    playing ? stop() : start();
 });
 
-// ---- Passive resume on any pointerdown (just in case) ----
-// Not strictly needed, but helps if user taps elsewhere.
+// ---- Passive resume on any pointerdown (backup) ----
 document.addEventListener("pointerdown", () => {
     if (audioCtx && audioCtx.state === "suspended") {
         audioCtx.resume().then(() => console.log("🔊 Resumed via passive pointerdown"));
@@ -482,18 +460,16 @@ function buildGrid() {
             pad.dataset.step = step;
             if (pattern[row][step]) pad.classList.add("on");
 
-            // Use pointerdown for immediate response and audio activation
-            pad.addEventListener("pointerdown", async (e) => {
-                e.preventDefault(); // prevent context menu on iOS
-                // Toggle the pattern
+            pad.addEventListener("pointerdown", (e) => {
+                e.preventDefault();
+                // Toggle pattern
                 pattern[row][step] = !pattern[row][step];
                 pad.classList.toggle("on", pattern[row][step]);
                 saveToURL();
                 status.textContent = "● BEAT UPDATED — KEEP COOKING";
-
-                // Preview the sound immediately (if pad is ON)
+                // Preview sound if pad is ON (no await)
                 if (pattern[row][step]) {
-                    await playSound(row);
+                    playSound(row);
                 }
             });
 
@@ -521,7 +497,7 @@ function step() {
         p.classList.add("playing");
         const row = Number(p.dataset.row);
         if (pattern[row][currentStep]) {
-            playSound(row); // fire and forget – will resume if needed
+            playSound(row);
         }
     });
     updatePlayhead();
@@ -536,13 +512,9 @@ function schedule() {
     timer = setTimeout(() => { step(); schedule(); }, delay);
 }
 
-async function start() {
+function start() {
     if (playing) return;
-    const ok = await ensureAudioRunning();
-    if (!ok) {
-        status.textContent = "⚠️ CANNOT START – AUDIO CONTEXT NOT RUNNING";
-        return;
-    }
+    // Context already resumed via PLAY button handler
     playing = true;
     playBtn.textContent = "■ STOP";
     playBtn.style.background = "#ff3030";
@@ -564,12 +536,10 @@ function stop() {
     playBtn.style.borderColor = "";
     playBtn.style.color = "";
     grid.classList.remove("playing-grid");
-    status.textContent = "● READY — TAP A PAD OR TEST";
+    status.textContent = "● READY — TAP TEST OR ANY PAD";
     currentStep = 0;
     updatePlayhead();
 }
-
-playBtn.addEventListener("pointerdown", () => playing ? stop() : start());
 
 bpmSlider.oninput = () => {
     bpm = Number(bpmSlider.value);
@@ -581,14 +551,16 @@ swingSlider.oninput = () => {
     if (playing) { clearTimeout(timer); schedule(); }
 };
 
-// ---- Actions (same as before) ----
-document.getElementById("clearBtn").addEventListener("pointerdown", () => {
+// ---- Actions ----
+document.getElementById("clearBtn").addEventListener("pointerdown", (e) => {
+    e.preventDefault();
     pattern = Array.from({ length: ROWS }, () => Array(STEPS).fill(false));
     buildGrid();
     saveToURL();
     status.textContent = "● GRID CLEARED — START FRESH";
 });
-document.getElementById("randomBtn").addEventListener("pointerdown", () => {
+document.getElementById("randomBtn").addEventListener("pointerdown", (e) => {
+    e.preventDefault();
     for (let r=0; r<ROWS; r++)
         for (let s=0; s<STEPS; s++) {
             const prob = r===0 ? .45 : r===1 ? .28 : r===2 ? .20 : .25;
@@ -598,7 +570,8 @@ document.getElementById("randomBtn").addEventListener("pointerdown", () => {
     saveToURL();
     status.textContent = "✦ RANDOM BEAT GENERATED";
 });
-document.getElementById("flipBtn").addEventListener("pointerdown", () => {
+document.getElementById("flipBtn").addEventListener("pointerdown", (e) => {
+    e.preventDefault();
     for (let r=0; r<ROWS; r++)
         for (let s=0; s<STEPS; s++)
             if (Math.random() < .28) pattern[r][s] = !pattern[r][s];
@@ -606,7 +579,8 @@ document.getElementById("flipBtn").addEventListener("pointerdown", () => {
     saveToURL();
     status.textContent = "✦ AI FLIP — NEW ENERGY UNLOCKED";
 });
-document.getElementById("remixBtn").addEventListener("pointerdown", () => {
+document.getElementById("remixBtn").addEventListener("pointerdown", (e) => {
+    e.preventDefault();
     for (let r=0; r<ROWS; r++)
         pattern[r] = pattern[r].map(v => Math.random() < .2 ? !v : v);
     buildGrid();
@@ -616,7 +590,8 @@ document.getElementById("remixBtn").addEventListener("pointerdown", () => {
 
 // Genres
 document.querySelectorAll(".genre").forEach(btn => {
-    btn.addEventListener("pointerdown", () => {
+    btn.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
         document.querySelectorAll(".genre").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         applyGenre(btn.dataset.genre);
@@ -642,7 +617,8 @@ function applyGenre(genre) {
 
 // Pattern slots
 document.querySelectorAll(".slot").forEach(slot => {
-    slot.addEventListener("pointerdown", () => {
+    slot.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
         const i = Number(slot.dataset.slot);
         document.querySelectorAll(".slot").forEach(s => s.classList.remove("active"));
         slot.classList.add("active");
@@ -656,7 +632,8 @@ document.querySelectorAll(".slot").forEach(slot => {
         }
     });
 });
-document.getElementById("saveBtn").addEventListener("pointerdown", () => {
+document.getElementById("saveBtn").addEventListener("pointerdown", (e) => {
+    e.preventDefault();
     const active = document.querySelector(".slot.active");
     const i = Number(active.dataset.slot);
     patterns[i] = JSON.parse(JSON.stringify(pattern));
