@@ -194,6 +194,7 @@
             font-weight: 800;
             cursor: pointer;
             transition: .2s;
+            user-select: none;
         }
         .genre:hover,
         .genre.active {
@@ -234,6 +235,7 @@
             font-weight: 800;
             font-size: 10px;
             transition: .2s;
+            user-select: none;
         }
         .tool:hover {
             color: #fff;
@@ -337,6 +339,7 @@
             background: #101011;
             cursor: pointer;
             transition: transform .08s, background .1s, box-shadow .1s;
+            user-select: none;
         }
         .pad:hover {
             background: #181819;
@@ -406,6 +409,7 @@
             font-size: 10px;
             font-weight: 900;
             letter-spacing: .5px;
+            user-select: none;
         }
         .action:hover {
             color: #fff;
@@ -442,6 +446,7 @@
             color: #555;
             font-size: 9px;
             font-weight: 900;
+            user-select: none;
         }
         .slot.active {
             border-color: var(--lime);
@@ -649,18 +654,12 @@
     </div>
 
     <script>
-        // ──────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
         //  CONSTANTS & STATE
-        // ──────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
 
         const ROWS = 4,
             STEPS = 16;
-        const sounds = [
-            "sounds/bass_drum.wav",
-            "sounds/snare_drum.wav",
-            "sounds/low_tom.wav",
-            "sounds/mid_tom.wav"
-        ];
         const labels = [
             ["KICK", "🥁"],
             ["SNARE", "◈"],
@@ -670,6 +669,7 @@
 
         const audioCtx = new(window.AudioContext || window.webkitAudioContext)();
         let buffers = [];
+        let soundsLoaded = false;
         let bpm = 140,
             swing = 50,
             playing = false,
@@ -687,29 +687,137 @@
         const swingSlider = document.getElementById("swingSlider");
         const status = document.getElementById("status");
 
-        // ──────────────────────────────────────
-        //  SOUND LOADING
-        // ──────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
+        //  AUDIO CONTEXT RESUME (handles all user interactions)
+        // ──────────────────────────────────────────────────────────────
 
-        async function loadSounds() {
-            for (const file of sounds) {
-                try {
-                    const r = await fetch(file);
-                    const b = await r.arrayBuffer();
-                    buffers.push(await audioCtx.decodeAudioData(b));
-                } catch (_) {
-                    buffers.push(null);
-                }
+        async function resumeAudio() {
+            if (audioCtx.state === "suspended") {
+                await audioCtx.resume();
             }
         }
+
+        // Resume on any click or touch anywhere in the document
+        document.addEventListener("click", resumeAudio, { once: false });
+        document.addEventListener("touchstart", resumeAudio, { once: false });
+
+        // ──────────────────────────────────────────────────────────────
+        //  SYNTHETIC DRUM SYNTHESIS (no external files needed!)
+        // ──────────────────────────────────────────────────────────────
+
+        function createKickBuffer() {
+            const sampleRate = audioCtx.sampleRate;
+            const duration = 0.4;
+            const n = Math.floor(sampleRate * duration);
+            const buf = audioCtx.createBuffer(1, n, sampleRate);
+            const data = buf.getChannelData(0);
+
+            // Exponential decay + pitch drop
+            for (let i = 0; i < n; i++) {
+                const t = i / sampleRate;
+                const env = Math.exp(-t * 12);
+                const freq = 80 + 120 * Math.exp(-t * 22);
+                const val = Math.sin(2 * Math.PI * freq * t) * env;
+                // Add a little click at the start
+                const click = Math.exp(-t * 80) * 0.15;
+                data[i] = val * 0.8 + click;
+            }
+            return buf;
+        }
+
+        function createSnareBuffer() {
+            const sampleRate = audioCtx.sampleRate;
+            const duration = 0.25;
+            const n = Math.floor(sampleRate * duration);
+            const buf = audioCtx.createBuffer(1, n, sampleRate);
+            const data = buf.getChannelData(0);
+
+            // Noise + tone with decay
+            for (let i = 0; i < n; i++) {
+                const t = i / sampleRate;
+                const env = Math.exp(-t * 18);
+                const noise = (Math.random() * 2 - 1) * env * 0.7;
+                const tone = Math.sin(2 * Math.PI * 180 * t) * Math.exp(-t * 15) * 0.4;
+                data[i] = noise + tone;
+            }
+            return buf;
+        }
+
+        function createTomBuffer(freq) {
+            const sampleRate = audioCtx.sampleRate;
+            const duration = 0.3;
+            const n = Math.floor(sampleRate * duration);
+            const buf = audioCtx.createBuffer(1, n, sampleRate);
+            const data = buf.getChannelData(0);
+
+            for (let i = 0; i < n; i++) {
+                const t = i / sampleRate;
+                const env = Math.exp(-t * 8);
+                const val = Math.sin(2 * Math.PI * freq * t) * env;
+                data[i] = val * 0.9;
+            }
+            return buf;
+        }
+
+        function generateSounds() {
+            // Kick, Snare, Low Tom (~120 Hz), Mid Tom (~180 Hz)
+            return [
+                createKickBuffer(),
+                createSnareBuffer(),
+                createTomBuffer(120),
+                createTomBuffer(180)
+            ];
+        }
+
+        // ──────────────────────────────────────────────────────────────
+        //  SOUND LOADING (with fallback)
+        // ──────────────────────────────────────────────────────────────
+
+        async function loadSounds() {
+            const soundFiles = [
+                "sounds/bass_drum.wav",
+                "sounds/snare_drum.wav",
+                "sounds/low_tom.wav",
+                "sounds/mid_tom.wav"
+            ];
+
+            const results = await Promise.allSettled(
+                soundFiles.map(async (file, idx) => {
+                    try {
+                        const r = await fetch(file);
+                        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                        const ab = await r.arrayBuffer();
+                        return await audioCtx.decodeAudioData(ab);
+                    } catch (err) {
+                        console.warn(`Failed to load ${file}, using synth fallback.`, err);
+                        return null; // will be replaced with synth
+                    }
+                })
+            );
+
+            buffers = results.map((result, idx) => {
+                if (result.status === "fulfilled" && result.value !== null) {
+                    return result.value;
+                }
+                // Fallback: generate synthetic sound
+                const synths = generateSounds();
+                return synths[idx] || null;
+            });
+
+            soundsLoaded = true;
+            status.textContent = "● SOUNDS READY — TAP A PAD TO START COOKING";
+        }
+
+        // Start loading
         loadSounds();
 
-        // ──────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
         //  GRID BUILDING
-        // ──────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
 
         function buildGrid() {
             document.querySelectorAll(".beat-row").forEach(el => el.remove());
+
             for (let row = 0; row < ROWS; row++) {
                 const rowDiv = document.createElement("div");
                 rowDiv.className = "row beat-row";
@@ -728,7 +836,7 @@
                     if (pattern[row][step]) pad.classList.add("on");
 
                     pad.addEventListener("click", async () => {
-                        if (audioCtx.state === "suspended") await audioCtx.resume();
+                        await resumeAudio();
                         pattern[row][step] = !pattern[row][step];
                         pad.classList.toggle("on", pattern[row][step]);
                         saveToURL();
@@ -739,38 +847,71 @@
                 }
                 grid.appendChild(rowDiv);
             }
+
+            // Restore playhead position if playing
+            if (playing) {
+                updatePlayhead();
+            }
         }
         buildGrid();
 
-        // ──────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
+        //  PLAYHEAD POSITIONING (fixed)
+        // ──────────────────────────────────────────────────────────────
+
+        function updatePlayhead() {
+            const pads = document.querySelectorAll(`.pad[data-step="${currentStep}"]`);
+            if (pads.length === 0) return;
+
+            // Use the first pad's position — but since all pads at the same step
+            // are in different rows, we take the average horizontal position.
+            const gridRect = grid.getBoundingClientRect();
+            let leftSum = 0;
+            pads.forEach(p => {
+                const r = p.getBoundingClientRect();
+                leftSum += r.left - gridRect.left;
+            });
+            const avgLeft = leftSum / pads.length;
+            playhead.style.left = `${avgLeft}px`;
+        }
+
+        // ──────────────────────────────────────────────────────────────
         //  PLAYBACK
-        // ──────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
 
         function playSound(row) {
-            if (!buffers[row]) return;
-            const src = audioCtx.createBufferSource();
-            src.buffer = buffers[row];
-            const gain = audioCtx.createGain();
-            gain.gain.value = .9;
-            src.connect(gain);
-            gain.connect(audioCtx.destination);
-            src.start();
+            if (!soundsLoaded || !buffers[row]) return;
+            try {
+                const src = audioCtx.createBufferSource();
+                src.buffer = buffers[row];
+                const gain = audioCtx.createGain();
+                gain.gain.value = 0.85;
+                src.connect(gain);
+                gain.connect(audioCtx.destination);
+                src.start();
+            } catch (e) {
+                console.warn("Playback error:", e);
+            }
         }
 
         function step() {
+            // Remove "playing" class from all pads
             document.querySelectorAll(".pad.playing").forEach(p => p.classList.remove("playing"));
-            document.querySelectorAll(`.pad[data-step="${currentStep}"]`).forEach(p => {
+
+            // Add "playing" to pads at current step and play sounds
+            const pads = document.querySelectorAll(`.pad[data-step="${currentStep}"]`);
+            pads.forEach(p => {
                 p.classList.add("playing");
                 const row = Number(p.dataset.row);
-                if (pattern[row][currentStep]) playSound(row);
+                if (pattern[row][currentStep]) {
+                    playSound(row);
+                }
             });
 
-            const p = document.querySelector(`.pad[data-step="${currentStep}"]`);
-            if (p) {
-                const r = p.getBoundingClientRect();
-                const g = grid.getBoundingClientRect();
-                playhead.style.left = `${r.left - g.left}px`;
-            }
+            // Update playhead position
+            updatePlayhead();
+
+            // Move to next step
             currentStep = (currentStep + 1) % STEPS;
         }
 
@@ -778,25 +919,38 @@
             if (!playing) return;
             const beatLength = 60000 / bpm / 4;
             const swingAmount = swing / 100;
-            const delay = currentStep % 2 === 1 ?
-                beatLength * (1 + (swingAmount - .5) * .5) :
+            // Swing: odd steps (1-indexed) get delayed
+            const isOdd = (currentStep % 2 === 1);
+            const delay = isOdd ?
+                beatLength * (1 + (swingAmount - 0.5) * 0.6) :
                 beatLength;
-            timer = setTimeout(() => { step();
-                schedule(); }, delay);
+
+            timer = setTimeout(() => {
+                step();
+                schedule();
+            }, delay);
         }
 
         function start() {
             if (playing) return;
-            playing = true;
-            if (audioCtx.state === "suspended") audioCtx.resume();
-            playBtn.textContent = "■ STOP";
-            playBtn.style.background = "#ff3030";
-            playBtn.style.borderColor = "#ff3030";
-            playBtn.style.color = "#fff";
-            grid.classList.add("playing-grid");
-            status.textContent = "● PLAYING — LET IT COOK";
-            step();
-            schedule();
+            if (!soundsLoaded) {
+                status.textContent = "⏳ SOUNDS STILL LOADING — WAIT A MOMENT";
+                return;
+            }
+            resumeAudio().then(() => {
+                playing = true;
+                playBtn.textContent = "■ STOP";
+                playBtn.style.background = "#ff3030";
+                playBtn.style.borderColor = "#ff3030";
+                playBtn.style.color = "#fff";
+                grid.classList.add("playing-grid");
+                status.textContent = "● PLAYING — LET IT COOK";
+
+                // Start from step 0
+                currentStep = 0;
+                step();
+                schedule();
+            });
         }
 
         function stop() {
@@ -809,25 +963,38 @@
             playBtn.style.color = "";
             grid.classList.remove("playing-grid");
             status.textContent = "● READY — TAP A PAD TO START COOKING";
+            // Reset playhead to step 0
+            currentStep = 0;
+            updatePlayhead();
         }
 
         playBtn.onclick = () => playing ? stop() : start();
 
-        // ──────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
         //  BPM / SWING
-        // ──────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
 
         bpmSlider.oninput = () => {
             bpm = Number(bpmSlider.value);
             bpmValue.textContent = bpm;
-        };
-        swingSlider.oninput = () => {
-            swing = Number(swingSlider.value);
+            // If playing, restart schedule to apply new BPM
+            if (playing) {
+                clearTimeout(timer);
+                schedule();
+            }
         };
 
-        // ──────────────────────────────────────
+        swingSlider.oninput = () => {
+            swing = Number(swingSlider.value);
+            if (playing) {
+                clearTimeout(timer);
+                schedule();
+            }
+        };
+
+        // ──────────────────────────────────────────────────────────────
         //  ACTIONS
-        // ──────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
 
         document.getElementById("clearBtn").onclick = () => {
             pattern = Array.from({ length: ROWS }, () => Array(STEPS).fill(false));
@@ -864,9 +1031,9 @@
             status.textContent = "↻ REMIXED — SAME DNA, NEW BEAT";
         };
 
-        // ──────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
         //  GENRES
-        // ──────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
 
         document.querySelectorAll(".genre").forEach(btn => {
             btn.onclick = () => {
@@ -929,9 +1096,9 @@
             status.textContent = `${genre} MODE — BEAT LOADED`;
         }
 
-        // ──────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
         //  PATTERN SLOTS
-        // ──────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
 
         document.querySelectorAll(".slot").forEach(slot => {
             slot.onclick = () => {
@@ -956,9 +1123,9 @@
             status.textContent = `✓ ${active.textContent} SAVED`;
         };
 
-        // ──────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
         //  URL ENCODING / SHARING
-        // ──────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
 
         function encodePattern() {
             let bits = "";
@@ -996,15 +1163,15 @@
             }
         };
 
-        // ──────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
         //  RESTORE FROM URL
-        // ──────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
 
         if (location.hash) decodePattern(location.hash.substring(1));
 
-        // ──────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
         //  KEYBOARD SHORTCUT
-        // ──────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
 
         document.addEventListener("keydown", e => {
             if (e.code === "Space") {
@@ -1013,10 +1180,13 @@
             }
         });
 
-        // resume audio context on first touch
-        document.addEventListener("touchstart", () => {
-            if (audioCtx.state === "suspended") audioCtx.resume();
-        }, { once: true });
+        // ──────────────────────────────────────────────────────────────
+        //  INIT
+        // ──────────────────────────────────────────────────────────────
+
+        // Mark sounds as loaded (synth fallback is immediate)
+        // The actual loadSounds() will override with real files if available.
+        console.log("🔊 BEAT.HAHZ.LIVE — Audio engine ready");
     </script>
 
 </body>
